@@ -1,0 +1,515 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Account": {
+      "additionalProperties": false,
+      "description": "One account and the credentials registered on it.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "service": {
+          "default": "other",
+          "description": "Key into services.yaml, or 'other'.",
+          "title": "Service",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/Tier"
+        },
+        "registrations": {
+          "items": {
+            "$ref": "#/$defs/Registration"
+          },
+          "title": "Registrations",
+          "type": "array"
+        },
+        "other_factors": {
+          "items": {
+            "$ref": "#/$defs/Factor"
+          },
+          "title": "Other Factors",
+          "type": "array"
+        },
+        "recovery_codes": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RecoveryCodesPointer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "tier"
+      ],
+      "title": "Account",
+      "type": "object"
+    },
+    "Advisory": {
+      "additionalProperties": false,
+      "description": "A vendor security advisory, maintained by hand \u2014 never fetched.",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "vendor": {
+          "$ref": "#/$defs/Vendor"
+        },
+        "affects": {
+          "$ref": "#/$defs/Affects"
+        },
+        "summary": {
+          "default": "",
+          "title": "Summary",
+          "type": "string"
+        },
+        "url": {
+          "description": "Link to the vendor's advisory page.",
+          "pattern": "^https?://",
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "vendor",
+        "url"
+      ],
+      "title": "Advisory",
+      "type": "object"
+    },
+    "Affects": {
+      "additionalProperties": false,
+      "description": "Firmware range an advisory applies to (inclusive lower, exclusive upper).",
+      "properties": {
+        "firmware_lt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firmware Lt"
+        },
+        "firmware_ge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firmware Ge"
+        }
+      },
+      "title": "Affects",
+      "type": "object"
+    },
+    "Capability": {
+      "enum": [
+        "fido2",
+        "u2f",
+        "piv",
+        "oath",
+        "otp",
+        "openpgp"
+      ],
+      "title": "Capability",
+      "type": "string"
+    },
+    "Factor": {
+      "description": "Non-hardware-key second factors an account may also have.",
+      "enum": [
+        "totp-app",
+        "sms",
+        "email",
+        "push",
+        "recovery-codes",
+        "synced-passkey"
+      ],
+      "title": "Factor",
+      "type": "string"
+    },
+    "Interface": {
+      "enum": [
+        "usb-a",
+        "usb-c",
+        "nfc",
+        "lightning",
+        "bluetooth"
+      ],
+      "title": "Interface",
+      "type": "string"
+    },
+    "Key": {
+      "additionalProperties": false,
+      "description": "One hardware security key.",
+      "properties": {
+        "id": {
+          "description": "Short stable id, referenced by accounts.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "description": "Human name, e.g. 'YubiKey 5C NFC (daily carry)'.",
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "vendor": {
+          "$ref": "#/$defs/Vendor"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Vendor model name; keys into models.yaml (M1).",
+          "title": "Model"
+        },
+        "firmware": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional; used for advisories and capacity.",
+          "title": "Firmware"
+        },
+        "serial": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional; the ledger is local-only anyway.",
+          "title": "Serial"
+        },
+        "interfaces": {
+          "items": {
+            "$ref": "#/$defs/Interface"
+          },
+          "title": "Interfaces",
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/KeyStatus",
+          "default": "active"
+        },
+        "holder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Holder"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        },
+        "acquired": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acquired"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "vendor"
+      ],
+      "title": "Key",
+      "type": "object"
+    },
+    "KeyStatus": {
+      "enum": [
+        "active",
+        "spare",
+        "lost",
+        "retired"
+      ],
+      "title": "KeyStatus",
+      "type": "string"
+    },
+    "MinKeys": {
+      "additionalProperties": false,
+      "description": "Required registered-key count per tier. Partial overrides keep defaults.",
+      "properties": {
+        "T0": {
+          "default": 3,
+          "minimum": 0,
+          "title": "T0",
+          "type": "integer"
+        },
+        "T1": {
+          "default": 2,
+          "minimum": 0,
+          "title": "T1",
+          "type": "integer"
+        },
+        "T2": {
+          "default": 1,
+          "minimum": 0,
+          "title": "T2",
+          "type": "integer"
+        }
+      },
+      "title": "MinKeys",
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "description": "Checkable policy. Defaults follow brief \u00a77 (owner question \u00a715.2).",
+      "properties": {
+        "min_keys": {
+          "$ref": "#/$defs/MinKeys"
+        },
+        "require_recovery_codes_for": {
+          "description": "Tiers whose accounts must carry a recovery-codes pointer.",
+          "items": {
+            "$ref": "#/$defs/Tier"
+          },
+          "title": "Require Recovery Codes For",
+          "type": "array"
+        },
+        "warn_factors": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/Factor"
+            },
+            "type": "array"
+          },
+          "description": "Weak factors that should not exist on accounts of a tier.",
+          "propertyNames": {
+            "$ref": "#/$defs/Tier"
+          },
+          "title": "Warn Factors",
+          "type": "object"
+        }
+      },
+      "title": "Policy",
+      "type": "object"
+    },
+    "RecoveryCodesPointer": {
+      "additionalProperties": false,
+      "description": "A pointer to where recovery codes are stored \u2014 never the codes.",
+      "properties": {
+        "stored": {
+          "title": "Stored",
+          "type": "boolean"
+        },
+        "where": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "e.g. 'password manager, item X'. Never the codes.",
+          "title": "Where"
+        }
+      },
+      "required": [
+        "stored"
+      ],
+      "title": "RecoveryCodesPointer",
+      "type": "object"
+    },
+    "Registration": {
+      "additionalProperties": false,
+      "description": "One credential registered on one key for one account.",
+      "properties": {
+        "key": {
+          "description": "Id of a key in the `keys` list.",
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/RegistrationType"
+        },
+        "registered": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Registered"
+        },
+        "nickname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Name shown in the service's UI, so you know which entry to delete.",
+          "title": "Nickname"
+        }
+      },
+      "required": [
+        "key",
+        "type"
+      ],
+      "title": "Registration",
+      "type": "object"
+    },
+    "RegistrationType": {
+      "enum": [
+        "fido2-discoverable",
+        "fido2-non-discoverable",
+        "u2f",
+        "piv",
+        "oath-totp",
+        "yubico-otp",
+        "openpgp"
+      ],
+      "title": "RegistrationType",
+      "type": "string"
+    },
+    "Tier": {
+      "description": "T0 root of trust \u00b7 T1 important \u00b7 T2 nice-to-have.",
+      "enum": [
+        "T0",
+        "T1",
+        "T2"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "Vendor": {
+      "enum": [
+        "yubico",
+        "google",
+        "tillitis",
+        "nitrokey",
+        "solokeys",
+        "feitian",
+        "other"
+      ],
+      "title": "Vendor",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A keyfleet ledger: keys, accounts, registrations, policy \u2014 never secrets.",
+  "properties": {
+    "version": {
+      "const": 1,
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "keys": {
+      "items": {
+        "$ref": "#/$defs/Key"
+      },
+      "title": "Keys",
+      "type": "array"
+    },
+    "accounts": {
+      "items": {
+        "$ref": "#/$defs/Account"
+      },
+      "title": "Accounts",
+      "type": "array"
+    },
+    "policy": {
+      "$ref": "#/$defs/Policy"
+    },
+    "advisories": {
+      "items": {
+        "$ref": "#/$defs/Advisory"
+      },
+      "title": "Advisories",
+      "type": "array"
+    }
+  },
+  "title": "keyfleet ledger",
+  "type": "object"
+}

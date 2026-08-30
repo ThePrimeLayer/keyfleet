@@ -1,0 +1,38 @@
+# Two min-keys violations: a T0 with one key, and a T1 whose second
+# registration sits on a LOST key (lost keys must not count as coverage).
+version: 1
+
+keys:
+  - { id: k-main, label: "Main key", vendor: yubico, status: active }
+  - { id: k-lost, label: "Lost key", vendor: yubico, status: lost }
+  - { id: k-desk, label: "Desk key", vendor: nitrokey, status: active }
+
+accounts:
+  - id: g-mail
+    service: google
+    label: "Primary email (Google)"
+    tier: T0
+    registrations:
+      - { key: k-main, type: fido2-discoverable, nickname: main }
+    other_factors: [totp-app]
+
+  - id: repo
+    service: github
+    label: "Code hosting"
+    tier: T1
+    registrations:
+      - { key: k-main, type: fido2-discoverable, nickname: main }
+      - { key: k-lost, type: fido2-discoverable, nickname: old }
+
+  - id: chat
+    service: discord
+    label: "Chat"
+    tier: T2
+    registrations:
+      - { key: k-desk, type: fido2-discoverable }
+
+policy:
+  min_keys: { T0: 3, T1: 2, T2: 1 }
+  require_recovery_codes_for: [T0, T1]
+  warn_factors:
+    T0: [sms, email]

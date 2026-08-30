@@ -1,0 +1,71 @@
+# Clean, comprehensive fixture: meets all default policy minimums.
+# Exercises non-ASCII labels, an int serial, a spare key, and an advisory.
+version: 1
+
+keys:
+  - id: yk-a
+    label: "YubiKey 5C NFC (daily carry)"
+    vendor: yubico
+    model: "YubiKey 5C NFC"
+    firmware: "5.7.1"
+    serial: 12345678
+    interfaces: [usb-c, nfc]
+    capabilities: [fido2, u2f, piv, oath, otp, openpgp]
+    status: active
+    holder: me
+    location: keychain
+    acquired: 2025-03-01
+
+  - id: yk-b
+    label: "Clé de secours ☂ (sac à dos)"
+    vendor: yubico
+    model: "YubiKey 5 NFC"
+    firmware: "5.4.3"
+    interfaces: [usb-a, nfc]
+    capabilities: [fido2, u2f]
+    status: active
+    holder: me
+    location: "sac à dos"
+
+  - id: spare-c
+    label: "Spare key in the safe"
+    vendor: other
+    interfaces: [usb-a]
+    capabilities: [fido2]
+    status: spare
+
+accounts:
+  - id: vault
+    service: bitwarden
+    label: "Password manager"
+    tier: T0
+    registrations:
+      - { key: yk-a, type: fido2-non-discoverable, registered: 2025-03-02, nickname: primary }
+      - { key: yk-b, type: fido2-non-discoverable, registered: 2025-03-02, nickname: backup }
+      - { key: spare-c, type: fido2-non-discoverable, registered: 2025-03-02, nickname: safe }
+    other_factors: [recovery-codes]
+    recovery_codes: { stored: true, where: "vault/recovery" }
+
+  - id: mail
+    service: fastmail
+    label: "Mail"
+    tier: T1
+    registrations:
+      - { key: yk-a, type: fido2-discoverable, nickname: primary }
+      - { key: yk-b, type: u2f, nickname: backup }
+    other_factors: [totp-app, recovery-codes]
+    recovery_codes: { stored: true, where: "vault/recovery" }
+
+  - id: forum
+    service: other
+    label: "Niche forum"
+    tier: T2
+    registrations:
+      - { key: yk-a, type: u2f }
+
+advisories:
+  - id: EX-2026-01
+    vendor: other
+    affects: { firmware_lt: "9.9" }
+    summary: "Fictional example advisory for tests"
+    url: https://example.invalid/adv/ex-2026-01
