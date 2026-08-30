@@ -1,0 +1,79 @@
+# Fictional ledger used only to record docs/demo.gif (scripts/gen_demo_gif.py).
+# Crafted so `keyfleet check` shows exactly: 2 FAIL, 1 WARN, 1 INFO.
+version: 1
+
+keys:
+  - id: yk-daily
+    label: "Daily-carry YubiKey 5C NFC"
+    vendor: yubico
+    model: "YubiKey 5C NFC"
+    firmware: "5.7.1"
+    status: active
+  - id: yk-desk
+    label: "Desk-drawer YubiKey 5 NFC"
+    vendor: yubico
+    model: "YubiKey 5 NFC"
+    firmware: "5.4.3"
+    status: active
+  - id: yk-safe
+    label: "Spare key in the safe"
+    vendor: yubico
+    model: "YubiKey 5 NFC"
+    status: spare
+  - id: yk-old
+    label: "Old key, lost in the move"
+    vendor: yubico
+    model: "YubiKey 5 NFC"
+    firmware: "5.2.4"
+    status: lost
+
+accounts:
+  - id: vault
+    service: bitwarden
+    label: "Password manager"
+    tier: T0
+    registrations:
+      - { key: yk-daily, type: fido2-non-discoverable, nickname: daily }
+      - { key: yk-desk, type: fido2-non-discoverable, nickname: desk }
+      - { key: yk-safe, type: fido2-non-discoverable, nickname: safe-spare }
+      - { key: yk-old, type: fido2-non-discoverable, nickname: old-blue }
+    other_factors: [recovery-codes]
+    recovery_codes: { stored: true, where: "sealed envelope in the safe" }
+
+  - id: email
+    service: google
+    label: "Primary email (Google)"
+    tier: T0
+    registrations:
+      - { key: yk-daily, type: fido2-discoverable, nickname: daily }
+      - { key: yk-old, type: fido2-discoverable, nickname: old-blue }
+    other_factors: [sms, recovery-codes]
+    recovery_codes: { stored: true, where: "password manager" }
+
+  - id: repo
+    service: github
+    label: "Code hosting (GitHub)"
+    tier: T1
+    registrations:
+      - { key: yk-daily, type: fido2-discoverable, nickname: daily }
+      - { key: yk-desk, type: fido2-discoverable, nickname: desk }
+    other_factors: [totp-app]
+
+  - id: cloud
+    service: aws
+    label: "Cloud (AWS root)"
+    tier: T1
+    registrations:
+      - { key: yk-daily, type: fido2-non-discoverable, nickname: daily }
+      - { key: yk-desk, type: fido2-non-discoverable, nickname: desk }
+      - { key: yk-old, type: fido2-non-discoverable, nickname: old-blue }
+    other_factors: [recovery-codes]
+    recovery_codes: { stored: true, where: "sealed envelope in the safe" }
+
+  - id: chat
+    service: discord
+    label: "Chat (Discord)"
+    tier: T2
+    registrations:
+      - { key: yk-daily, type: fido2-discoverable, nickname: daily }
+    other_factors: [totp-app]
