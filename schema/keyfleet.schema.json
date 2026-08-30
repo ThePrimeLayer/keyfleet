@@ -88,6 +88,25 @@
           "pattern": "^https?://",
           "title": "Url",
           "type": "string"
+        },
+        "verified": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "When the affected ranges were read from the advisory page.",
+          "title": "Verified"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
         }
       },
       "required": [

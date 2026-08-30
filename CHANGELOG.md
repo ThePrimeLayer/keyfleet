@@ -32,3 +32,10 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Recovery-code pointer check: INFO for accounts in tiers listed in
   `policy.require_recovery_codes_for` (default T0+T1) that have no stored
   recovery-code pointer.
+- Bundled reference data, every fact verified on the vendor's own page (or
+  `null`, never guessed): `services.yaml` with 32 services (settings URLs,
+  documented key limits, passkey support), `models.yaml` with
+  discoverable-credential capacities per firmware (YubiKey 5 / Security Key
+  series 25→100 at 5.7, Nitrokey 3 family), and `advisories.yaml` seeded with
+  YSA-2024-02, YSA-2024-03, and YSA-2025-02. `docs/SERVICES.md` is generated
+  from the services table.

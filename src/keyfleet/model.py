@@ -202,6 +202,10 @@ class Advisory(StrictModel):
     affects: Affects = Field(default_factory=Affects)
     summary: str = ""
     url: str = Field(pattern=r"^https?://", description="Link to the vendor's advisory page.")
+    verified: dt.date | None = Field(
+        None, description="When the affected ranges were read from the advisory page."
+    )
+    notes: str = ""
 
 
 class Ledger(StrictModel):

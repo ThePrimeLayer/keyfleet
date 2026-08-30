@@ -1,0 +1,32 @@
+# Bundled vendor security advisories, maintained by hand — keyfleet never
+# fetches anything. Summaries are in our own words; `url` links the vendor's
+# advisory, `verified` is when the affected ranges were read from it
+# (AGENTS.md §6). `affects` bounds are inclusive `firmware_ge`, exclusive
+# `firmware_lt`.
+#
+# Matching is by vendor + firmware range only, so a range can slightly
+# over-approximate for sub-series with different fix versions — the notes say
+# so where it happens. Always read the linked advisory before acting.
+
+advisories:
+  - id: YSA-2024-02
+    vendor: yubico
+    affects: { firmware_ge: "5.0", firmware_lt: "5.7" }
+    summary: "FIDO2 discoverable credentials could be enumerated by someone with local or physical access, without triggering user verification."
+    url: https://www.yubico.com/support/security-advisories/ysa-2024-02/
+    verified: 2026-08-29
+    notes: "Published 2024-05-21, severity Low (CVSS 3.3). YubiKey Bio was fixed earlier, in 5.6.4, so this range over-approximates for Bio 5.6.4-5.6.x."
+  - id: YSA-2024-03
+    vendor: yubico
+    affects: { firmware_ge: "5.0", firmware_lt: "5.7" }
+    summary: "Side channel in Infineon's cryptographic library allows ECDSA private-key recovery given physical possession and specialist lab equipment."
+    url: https://www.yubico.com/support/security-advisories/ysa-2024-03/
+    verified: 2026-08-29
+    notes: "Published 2024-09-03, severity Moderate (CVSS 4.9). YubiKey Bio fixed in 5.7.2 (this range misses Bio 5.7.0-5.7.1); YubiHSM 2 before 2.4.0 also affected — see the advisory."
+  - id: YSA-2025-02
+    vendor: yubico
+    affects: { firmware_ge: "5.4.1", firmware_lt: "5.7.4" }
+    summary: "PIN/UV auth protocol two verified a 16-byte signature length where CTAP requires 32 bytes."
+    url: https://www.yubico.com/support/security-advisories/ysa-2025-02/
+    verified: 2026-08-29
+    notes: "Published 2025-04-02, severity Low (CVSS 2.2). Affects YubiKey 5/FIPS/Bio and Security Key Series 5.4.1 through 5.7.3."
