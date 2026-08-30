@@ -7,6 +7,11 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-30
+
+First release: the ledger, the checker, the incident tooling, and the
+source-cited services dataset.
+
 ### Added
 
 - YAML ledger schema (keys ↔ accounts ↔ registrations, policy, advisories)
