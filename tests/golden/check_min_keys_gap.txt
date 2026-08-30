@@ -1,0 +1,9 @@
+keyfleet check — 3 keys (2 active, 1 lost) · 3 accounts
+
+FAIL  T0 "Primary email (Google)" has 1 hardware key registered; policy requires 3
+FAIL  T1 "Code hosting" has 1 hardware key registered; policy requires 2
+FAIL  Key k-lost is LOST but still registered on 1 account → run: keyfleet lost k-lost
+INFO  T0 "Primary email (Google)" has no recovery-code pointer (policy requires recovery codes for T0)
+INFO  T1 "Code hosting" has no recovery-code pointer (policy requires recovery codes for T1)
+
+3 fail, 0 warn, 2 info · exit 1

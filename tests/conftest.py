@@ -1,11 +1,32 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from keyfleet.model import Ledger
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+GOLDEN = Path(__file__).resolve().parent / "golden"
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def assert_golden(actual: str, name: str) -> None:
+    """Compare against tests/golden/<name>.
+
+    Rewrite the files with:  KEYFLEET_UPDATE_GOLDENS=1 uv run pytest -q
+    (then review the diff before committing).
+    """
+    path = GOLDEN / name
+    if os.environ.get("KEYFLEET_UPDATE_GOLDENS"):
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(actual, encoding="utf-8", newline="\n")
+        return
+    assert path.is_file(), f"golden file {name} missing — regenerate (see assert_golden docstring)"
+    assert actual == path.read_text(encoding="utf-8"), (
+        f"output drifted from tests/golden/{name} — if the change is intended, "
+        "regenerate (see assert_golden docstring) and review the diff"
+    )
+
 
 #: Default key set for inline check tests: one key per status.
 DEFAULT_KEYS = [
