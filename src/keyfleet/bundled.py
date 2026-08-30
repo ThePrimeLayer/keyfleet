@@ -9,6 +9,7 @@ plain argument so they stay pure.
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import dataclass
 from functools import lru_cache
 from importlib import resources
 from typing import Any
@@ -21,6 +22,7 @@ from keyfleet.model import (
     Capability,
     Interface,
     Key,
+    Ledger,
     LedgerError,
     StrictModel,
     Vendor,
@@ -164,6 +166,62 @@ def model_info_for_key(models: list[KeyModelInfo], key: Key) -> KeyModelInfo | N
     if not candidates:
         return None
     return max(candidates, key=lambda info: len(info.family))
+
+
+@dataclass(frozen=True, slots=True)
+class AdvisoryMatch:
+    """One ledger key against the advisory list."""
+
+    key_id: str
+    key_label: str
+    firmware: str | None  # None → the key needs `firmware:` set to evaluate
+    advisories: tuple[Advisory, ...]
+
+    @property
+    def needs_firmware(self) -> bool:
+        return self.firmware is None
+
+
+def match_advisories(ledger: Ledger, bundled: BundledData) -> list[AdvisoryMatch]:
+    """Match every ledger key against bundled + ledger advisories.
+
+    Ledger advisories extend the bundled list; on an id collision the ledger
+    entry wins. A key with no firmware whose vendor has advisories on file
+    yields a needs-firmware entry (brief §9). Keys of vendors with no
+    advisories are omitted entirely.
+    """
+    merged: dict[str, Advisory] = {advisory.id: advisory for advisory in bundled.advisories}
+    for advisory in ledger.advisories:
+        merged[advisory.id] = advisory
+    by_vendor: dict[Vendor, list[Advisory]] = {}
+    for advisory in merged.values():
+        by_vendor.setdefault(advisory.vendor, []).append(advisory)
+
+    matches: list[AdvisoryMatch] = []
+    for key in ledger.keys:
+        candidates = by_vendor.get(key.vendor, [])
+        if not candidates:
+            continue
+        if key.firmware is None:
+            matches.append(AdvisoryMatch(key.id, key.label, None, ()))
+            continue
+        matched = tuple(
+            sorted(
+                (
+                    advisory
+                    for advisory in candidates
+                    if firmware_in_range(
+                        key.firmware,
+                        firmware_ge=advisory.affects.firmware_ge,
+                        firmware_lt=advisory.affects.firmware_lt,
+                    )
+                ),
+                key=lambda advisory: advisory.id,
+            )
+        )
+        if matched:
+            matches.append(AdvisoryMatch(key.id, key.label, key.firmware, matched))
+    return matches
 
 
 def discoverable_capacity(info: KeyModelInfo, firmware: str | None) -> int | None:

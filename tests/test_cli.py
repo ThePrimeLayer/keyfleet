@@ -175,3 +175,44 @@ class TestReport:
     def test_md_and_json_together_is_usage_error(self):
         result = runner.invoke(app, ["report", "--md", "--json", str(fixture("valid.yaml"))])
         assert result.exit_code == 2
+
+
+class TestAdvisories:
+    def test_lists_matches_and_firmware_prompts(self):
+        result = runner.invoke(app, ["advisories", str(fixture("valid.yaml"))])
+        assert result.exit_code == 0, all_output(result)
+        out = result.output
+        assert "2 affected keys · 1 without firmware set" in out
+        assert "YSA-2024-03" in out
+        assert "https://www.yubico.com/support/security-advisories/ysa-2024-03/" in out
+        assert "spare-c" in out and "set `firmware:`" in out
+
+    def test_clean_ledger_reports_no_matches(self, tmp_path):
+        path = tmp_path / "ledger.yaml"
+        path.write_text(
+            "version: 1\nkeys: [{id: k1, label: K, vendor: other, firmware: '1.0'}]\n",
+            encoding="utf-8",
+        )
+        result = runner.invoke(app, ["advisories", str(path)])
+        assert result.exit_code == 0
+        assert "No keys match any advisory on file." in result.output
+
+
+class TestServices:
+    def test_full_table_lists_bundled_services(self):
+        result = runner.invoke(app, ["services"])
+        assert result.exit_code == 0
+        assert "Bundled services (32)" in result.output
+        assert "github" in result.output
+
+    def test_search_filters_by_substring(self):
+        result = runner.invoke(app, ["services", "--search", "git"])
+        assert result.exit_code == 0
+        assert "github" in result.output
+        assert "gitlab" in result.output
+        assert "discord" not in result.output
+
+    def test_search_miss_says_so(self):
+        result = runner.invoke(app, ["services", "--search", "zzznope"])
+        assert result.exit_code == 0
+        assert 'No bundled service matches "zzznope"' in result.output

@@ -32,6 +32,10 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Recovery-code pointer check: INFO for accounts in tiers listed in
   `policy.require_recovery_codes_for` (default T0+T1) that have no stored
   recovery-code pointer.
+- `keyfleet advisories` — matches every key against the bundled advisory list
+  (plus any ledger-local advisories) by vendor and firmware range; keys
+  without `firmware:` are prompted to set it.
+- `keyfleet services [--search NAME]` — prints the bundled service table.
 - `keyfleet report [--md|--json]` — coverage matrix (accounts x keys with
   registration types), per-tier summary, and key utilization including
   discoverable-credential usage against known capacities.

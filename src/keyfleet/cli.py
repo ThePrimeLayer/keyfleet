@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.text import Text
 
 from keyfleet import report
-from keyfleet.bundled import load_bundled
+from keyfleet.bundled import load_bundled, match_advisories
 from keyfleet.checks import Level, run_checks
 from keyfleet.impact import UnknownKeyError, analyze_lost
 from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
@@ -123,3 +123,35 @@ def report_cmd(
         print(report.report_markdown(model, data), end="")
     else:
         report.render_report(model, data, _out)
+
+
+@app.command()
+def advisories(ledger: LedgerArg = DEFAULT_LEDGER) -> None:
+    """Keys matching known vendor advisories (bundled list plus ledger extras)."""
+    model = _load(ledger, invalid_exit=2, hint=f"Run `keyfleet validate {ledger}` for details.")
+    report.render_advisories(match_advisories(model, load_bundled()), _out)
+
+
+@app.command()
+def services(
+    search: Annotated[
+        str | None, typer.Option("--search", help="Substring filter on service id or name.")
+    ] = None,
+) -> None:
+    """The bundled service table: settings URLs, key limits, passkey support."""
+    bundled = load_bundled()
+    selected = {
+        service_id: service
+        for service_id, service in bundled.services.items()
+        if search is None
+        or search.lower() in service_id.lower()
+        or search.lower() in service.name.lower()
+    }
+    if not selected:
+        _out.print(
+            f'No bundled service matches "{search}". Use service: other in the ledger, '
+            "or contribute the entry (see AGENTS.md §6).",
+            soft_wrap=True,
+        )
+        return
+    report.render_services(selected, _out)

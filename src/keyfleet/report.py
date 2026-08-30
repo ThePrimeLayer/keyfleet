@@ -14,7 +14,13 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from keyfleet.bundled import BundledData, discoverable_capacity, model_info_for_key
+from keyfleet.bundled import (
+    AdvisoryMatch,
+    BundledData,
+    ServiceInfo,
+    discoverable_capacity,
+    model_info_for_key,
+)
 from keyfleet.checks import Finding, Level, covering_key_ids
 from keyfleet.impact import AccountImpact, LostImpact
 from keyfleet.model import KeyStatus, Ledger, Registration, RegistrationType, Tier
@@ -164,6 +170,66 @@ def lost_markdown(result: LostImpact, bundled: BundledData) -> str:
     if followup:
         lines += ["", followup]
     return "\n".join(lines) + "\n"
+
+
+def render_advisories(matches: list[AdvisoryMatch], console: Console) -> None:
+    """Keys matching known advisories, plus keys that need `firmware:` set."""
+    affected = [match for match in matches if not match.needs_firmware]
+    pending = [match for match in matches if match.needs_firmware]
+    console.print(
+        f"keyfleet advisories — {_plural(len(affected), 'affected key')} · "
+        f"{len(pending)} without firmware set",
+        style="bold",
+        soft_wrap=True,
+    )
+    console.print()
+    if not matches:
+        console.print("No keys match any advisory on file.", soft_wrap=True)
+        return
+    for match in affected:
+        console.print(
+            f'{match.key_id} "{match.key_label}" (firmware {match.firmware}):', soft_wrap=True
+        )
+        for advisory in match.advisories:
+            line = Text("  ")
+            line.append(advisory.id, style="bold yellow")
+            line.append(f" — {advisory.summary}")
+            console.print(line, soft_wrap=True)
+            console.print(f"    {advisory.url}", style="dim", soft_wrap=True)
+            if advisory.notes:
+                console.print(f"    note: {advisory.notes}", style="dim", soft_wrap=True)
+    for match in pending:
+        console.print(
+            f'{match.key_id} "{match.key_label}": set `firmware:` in the ledger '
+            "to evaluate advisories",
+            style="cyan",
+            soft_wrap=True,
+        )
+
+
+def render_services(services: dict[str, ServiceInfo], console: Console) -> None:
+    """The bundled services table (optionally pre-filtered by the CLI)."""
+    table = Table(title=f"Bundled services ({len(services)})", title_justify="left")
+    table.add_column("Id")
+    table.add_column("Name")
+    table.add_column("Max keys", justify="right")
+    table.add_column("Passkeys")
+    table.add_column("Security-key settings")
+    for service_id, service in services.items():
+        table.add_row(
+            service_id,
+            service.name,
+            "—" if service.max_keys is None else str(service.max_keys),
+            {True: "yes", False: "no", None: "?"}[service.fido2_discoverable],
+            service.security_settings_url or "—",
+        )
+    console.print(table)
+    console.print(
+        "Facts verified per entry on the service's own page — see docs/SERVICES.md "
+        "for sources. '—' = not documented; '?' = page does not say.",
+        style="dim",
+        soft_wrap=True,
+    )
 
 
 # --- keyfleet report ---------------------------------------------------------
