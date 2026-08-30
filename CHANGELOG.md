@@ -32,6 +32,9 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Recovery-code pointer check: INFO for accounts in tiers listed in
   `policy.require_recovery_codes_for` (default T0+T1) that have no stored
   recovery-code pointer.
+- Encrypted ledgers: every command transparently reads `keyfleet.yaml.age`
+  (or any `*.age` path) via the `age` CLI, decrypting to memory only; set
+  `KEYFLEET_AGE_IDENTITY` to an identity file for non-interactive use.
 - `keyfleet init` — writes the fictional example ledger into the current
   directory and makes sure `.gitignore` covers `keyfleet.yaml`.
 - `keyfleet advisories` — matches every key against the bundled advisory list

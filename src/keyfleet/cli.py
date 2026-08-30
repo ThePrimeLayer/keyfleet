@@ -15,8 +15,9 @@ from rich.text import Text
 from keyfleet import report
 from keyfleet.bundled import example_ledger_text, load_bundled, match_advisories
 from keyfleet.checks import Level, run_checks
+from keyfleet.crypto import load_ledger_auto
 from keyfleet.impact import UnknownKeyError, analyze_lost
-from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
+from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
 
@@ -41,7 +42,7 @@ LedgerArg = Annotated[Path, typer.Argument(help="Ledger YAML file.", show_defaul
 def _load(path: Path, *, invalid_exit: int, hint: str | None = None) -> Ledger:
     # soft_wrap: keep message lines whole (grep-able) instead of re-wrapping.
     try:
-        return load_ledger(path)
+        return load_ledger_auto(path)
     except LedgerNotFoundError as exc:
         _err.print(str(exc), style="red", soft_wrap=True)
         raise typer.Exit(2) from exc

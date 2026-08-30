@@ -18,6 +18,10 @@ jobs:
       - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.12"
+      # Exercise the age round-trip tests on at least one OS (they skip
+      # gracefully where the binary is absent).
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y age
       - run: uv sync --all-extras --dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .

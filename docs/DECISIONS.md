@@ -54,6 +54,24 @@ The owner confirmed all recommended defaults in chat on 2026-08-29:
 3. **Name: `keyfleet`** — free on PyPI (checked 2026-08-29); the GitHub org
    name is taken (private/empty) but the repo lives under the owner's account.
 
+## 2026-08-29 — age identities via KEYFLEET_AGE_IDENTITY; informational commands exit 0
+
+`.age` decryption shells out to the `age` CLI (decrypt to memory only). For
+non-interactive use (tests, scripts) the identity file is taken from the
+`KEYFLEET_AGE_IDENTITY` environment variable; otherwise age's own passphrase
+prompt on the terminal is used. A CLI flag was considered and rejected for
+v0.1: brief §8 fixes the command surface. Relatedly, `lost`, `report`,
+`advisories`, and `services` are informational and always exit 0 on success
+(2 on usage/load errors) — exit 1 stays reserved for `check`'s FAIL findings
+and `validate`'s invalid-ledger result.
+
+## 2026-08-29 — Capacity thresholds: INFO at ≥50%, WARN at ≥90%
+
+Brief §9 gives no threshold; its sample shows 61/100 as INFO. Emitting on any
+usage would be noise for small ledgers, so: INFO from half full (start
+planning), WARN from 90% (act now). Constants in checks.py; revisit on
+feedback.
+
 ## 2026-08-29 — Secret detection: name heuristics + value heuristics
 
 Brief §13 requires rejecting secret-looking content. Decision: scan the raw
