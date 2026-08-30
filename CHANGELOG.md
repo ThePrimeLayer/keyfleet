@@ -7,6 +7,16 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-30
+
+### Fixed
+
+- `keyfleet init` now fails cleanly (exit 2, no traceback) when the current
+  directory is not writable — e.g. a Windows terminal that opens in
+  `C:\Windows\System32` — and says to `cd` to where the ledger should live.
+  Its messages now print absolute paths, so it is always obvious where files
+  were written.
+
 ## [0.1.0] - 2026-08-30
 
 First release: the ledger, the checker, the incident tooling, and the
