@@ -1,0 +1,4 @@
+# Owner works on Windows and macOS: normalize to LF in the repo.
+* text=auto eol=lf
+*.png binary
+*.gif binary
