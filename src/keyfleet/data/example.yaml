@@ -1,0 +1,99 @@
+# keyfleet example ledger — entirely fictional people, keys, and accounts.
+# Copy to keyfleet.yaml (gitignored) and make it yours.
+# keyfleet stores no secrets: registrations, statuses, and pointers only.
+# Editor completion: schema/keyfleet.schema.json
+
+version: 1
+
+keys:
+  - id: yk-blue
+    label: "Blue YubiKey 5C NFC — daily carry"
+    vendor: yubico
+    model: "YubiKey 5C NFC"
+    firmware: "5.7.1"
+    interfaces: [usb-c, nfc]
+    capabilities: [fido2, u2f, oath, piv, otp, openpgp]
+    status: active
+    holder: alex
+    location: keychain
+    acquired: 2025-03-01
+
+  - id: yk-red
+    label: "Red YubiKey 5 NFC — desk drawer"
+    vendor: yubico
+    model: "YubiKey 5 NFC"
+    firmware: "5.4.3"
+    interfaces: [usb-a, nfc]
+    capabilities: [fido2, u2f, oath, piv, otp, openpgp]
+    status: active
+    holder: alex
+    location: "desk drawer"
+    acquired: 2024-11-15
+
+  - id: nk-safe
+    label: "Nitrokey 3A NFC — spare in the safe"
+    vendor: nitrokey
+    model: "Nitrokey 3A NFC"
+    interfaces: [usb-a, nfc]
+    capabilities: [fido2]
+    status: spare
+    holder: alex
+    location: "home safe"
+    acquired: 2025-06-20
+
+accounts:
+  - id: pw-manager
+    service: bitwarden
+    label: "Password manager (family)"
+    tier: T0
+    registrations:
+      - { key: yk-blue, type: fido2-non-discoverable, registered: 2025-03-02, nickname: blue-daily }
+      - { key: yk-red, type: fido2-non-discoverable, registered: 2025-03-02, nickname: red-desk }
+      - { key: nk-safe, type: fido2-non-discoverable, registered: 2025-06-21, nickname: safe-spare }
+    other_factors: [recovery-codes]
+    recovery_codes: { stored: true, where: "sealed envelope in the home safe" }
+
+  - id: email-primary
+    service: google
+    label: "Primary email (Google)"
+    tier: T0
+    registrations:
+      - { key: yk-blue, type: fido2-discoverable, registered: 2025-03-02, nickname: blue-daily }
+      - { key: yk-red, type: fido2-discoverable, registered: 2025-03-02, nickname: red-desk }
+      - { key: nk-safe, type: fido2-discoverable, registered: 2025-06-21, nickname: safe-spare }
+    other_factors: [totp-app, recovery-codes]
+    recovery_codes: { stored: true, where: "password manager, item 'Google backup'" }
+
+  - id: forge
+    service: github
+    label: "GitHub (personal)"
+    tier: T1
+    registrations:
+      - { key: yk-blue, type: fido2-discoverable, registered: 2025-03-05, nickname: blue-daily }
+    other_factors: [totp-app, recovery-codes]
+    recovery_codes: { stored: true, where: "password manager, item 'GitHub backup'" }
+    notes: "Deliberate example gap: only one key registered, so `keyfleet check` shows a FAIL."
+
+  - id: cloud-root
+    service: aws
+    label: "AWS root account"
+    tier: T1
+    registrations:
+      - { key: yk-blue, type: fido2-non-discoverable, registered: 2025-04-10, nickname: blue-daily }
+      - { key: yk-red, type: fido2-non-discoverable, registered: 2025-04-10, nickname: red-desk }
+    other_factors: [recovery-codes]
+    recovery_codes: { stored: true, where: "sealed envelope in the home safe" }
+
+  - id: chat
+    service: discord
+    label: "Discord"
+    tier: T2
+    registrations:
+      - { key: yk-blue, type: fido2-discoverable, registered: 2025-05-01, nickname: blue-daily }
+    other_factors: [totp-app]
+
+policy:
+  min_keys: { T0: 3, T1: 2, T2: 1 }
+  require_recovery_codes_for: [T0, T1]
+  warn_factors:
+    T0: [sms, email]

@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.text import Text
 
 from keyfleet import report
-from keyfleet.bundled import load_bundled, match_advisories
+from keyfleet.bundled import example_ledger_text, load_bundled, match_advisories
 from keyfleet.checks import Level, run_checks
 from keyfleet.impact import UnknownKeyError, analyze_lost
 from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
@@ -155,3 +155,41 @@ def services(
         )
         return
     report.render_services(selected, _out)
+
+
+_GITIGNORE_ENTRY = "keyfleet.yaml"
+
+
+@app.command()
+def init() -> None:
+    """Write keyfleet.example.yaml here and gitignore keyfleet.yaml (never commit a real ledger)."""
+    example = Path("keyfleet.example.yaml")
+    if example.exists():
+        _out.print(f"{example} already exists — leaving it untouched.", soft_wrap=True)
+    else:
+        example.write_text(example_ledger_text(), encoding="utf-8")
+        _out.print(f"Wrote {example} (fictional).", soft_wrap=True)
+
+    gitignore = Path(".gitignore")
+    if gitignore.exists():
+        lines = gitignore.read_text(encoding="utf-8").splitlines()
+        if _GITIGNORE_ENTRY in (line.strip() for line in lines):
+            _out.print(f".gitignore already covers {_GITIGNORE_ENTRY}.", soft_wrap=True)
+        else:
+            content = "\n".join(
+                [*lines, "# keyfleet: never commit a real ledger", _GITIGNORE_ENTRY]
+            )
+            gitignore.write_text(content + "\n", encoding="utf-8")
+            _out.print(f"Added {_GITIGNORE_ENTRY} to .gitignore.", soft_wrap=True)
+    else:
+        gitignore.write_text(
+            f"# keyfleet: never commit a real ledger\n{_GITIGNORE_ENTRY}\n", encoding="utf-8"
+        )
+        _out.print(f"Created .gitignore with {_GITIGNORE_ENTRY}.", soft_wrap=True)
+
+    _out.print(
+        "\nNext: copy keyfleet.example.yaml to keyfleet.yaml, make it yours, then run "
+        "`keyfleet validate` and `keyfleet check`. The ledger maps which keys guard "
+        "which accounts — treat it as sensitive and keep it encrypted where possible.",
+        soft_wrap=True,
+    )

@@ -69,6 +69,17 @@ class TestAdvisoriesData:
             assert advisory.verified is not None, f"{advisory.id}: missing verified date"
 
 
+class TestExampleSync:
+    def test_root_example_matches_packaged_copy(self):
+        from keyfleet.bundled import example_ledger_text
+
+        root = (REPO_ROOT / "keyfleet.example.yaml").read_text(encoding="utf-8")
+        assert root == example_ledger_text(), (
+            "keyfleet.example.yaml and src/keyfleet/data/example.yaml drifted — "
+            "edit the root file and copy it into the package data"
+        )
+
+
 class TestGeneratedDocs:
     def test_services_md_is_fresh(self):
         path = REPO_ROOT / "docs" / "SERVICES.md"

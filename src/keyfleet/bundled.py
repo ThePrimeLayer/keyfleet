@@ -85,6 +85,11 @@ def _read_data_yaml(name: str) -> Any:
     return yaml.safe_load(text)
 
 
+def example_ledger_text() -> str:
+    """The packaged example ledger (mirrors keyfleet.example.yaml at the repo root)."""
+    return resources.files("keyfleet").joinpath("data", "example.yaml").read_text(encoding="utf-8")
+
+
 @lru_cache(maxsize=1)
 def load_bundled() -> BundledData:
     """Load and validate the three bundled data files."""

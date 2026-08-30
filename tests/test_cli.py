@@ -216,3 +216,38 @@ class TestServices:
         result = runner.invoke(app, ["services", "--search", "zzznope"])
         assert result.exit_code == 0
         assert 'No bundled service matches "zzznope"' in result.output
+
+
+class TestInit:
+    def test_fresh_directory_gets_example_and_gitignore(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 0, all_output(result)
+        assert (tmp_path / "keyfleet.example.yaml").is_file()
+        gitignore = (tmp_path / ".gitignore").read_text(encoding="utf-8")
+        assert "keyfleet.yaml" in gitignore.splitlines()
+        assert "Next: copy keyfleet.example.yaml" in result.output
+
+    def test_written_example_validates(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        runner.invoke(app, ["init"])
+        result = runner.invoke(app, ["validate", "keyfleet.example.yaml"])
+        assert result.exit_code == 0, all_output(result)
+
+    def test_rerun_is_idempotent(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        runner.invoke(app, ["init"])
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 0
+        assert "already exists" in result.output
+        gitignore = (tmp_path / ".gitignore").read_text(encoding="utf-8")
+        assert gitignore.splitlines().count("keyfleet.yaml") == 1
+
+    def test_appends_to_existing_gitignore_without_trailing_newline(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / ".gitignore").write_text(".venv/", encoding="utf-8")
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 0
+        lines = (tmp_path / ".gitignore").read_text(encoding="utf-8").splitlines()
+        assert lines[0] == ".venv/"
+        assert "keyfleet.yaml" in lines
