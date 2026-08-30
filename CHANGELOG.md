@@ -29,3 +29,6 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Weak-factor check: WARN for every factor a tier's policy warns against
   (default: sms and email on T0 accounts).
 - Unregistered-spare check: WARN for spare keys registered on no account.
+- Recovery-code pointer check: INFO for accounts in tiers listed in
+  `policy.require_recovery_codes_for` (default T0+T1) that have no stored
+  recovery-code pointer.

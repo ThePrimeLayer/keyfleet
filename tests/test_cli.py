@@ -75,22 +75,20 @@ class TestCheck:
             "FAIL  Key k-lost is LOST but still registered on 1 account "
             "→ run: keyfleet lost k-lost" in result.output
         )
-        assert "3 fail, 0 warn, 0 info · exit 1" in result.output
+        assert "3 fail, 0 warn, 2 info · exit 1" in result.output
 
     def test_json_output_is_parseable_and_complete(self):
         result = runner.invoke(app, ["check", "--json", str(fixture("min_keys_gap.yaml"))])
         assert result.exit_code == 1
         payload = json.loads(result.stdout)
-        assert payload["summary"] == {"fail": 3, "warn": 0, "info": 0}
+        assert payload["summary"] == {"fail": 3, "warn": 0, "info": 2}
         assert payload["exit_code"] == 1
         assert payload["ledger"]["keys"] == 3
-        assert {finding["account_id"] for finding in payload["findings"]} == {
-            "g-mail",
-            "repo",
-            None,
-        }
-        assert {finding["key_id"] for finding in payload["findings"]} == {None, "k-lost"}
-        assert all(finding["level"] == "FAIL" for finding in payload["findings"])
+        fails = [finding for finding in payload["findings"] if finding["level"] == "FAIL"]
+        assert {finding["account_id"] for finding in fails} == {"g-mail", "repo", None}
+        assert {finding["key_id"] for finding in fails} == {None, "k-lost"}
+        infos = [finding for finding in payload["findings"] if finding["level"] == "INFO"]
+        assert {finding["check"] for finding in infos} == {"recovery-codes"}
 
     def test_invalid_ledger_exits_2_with_validate_hint(self):
         result = runner.invoke(app, ["check", str(fixture("bad_ref.yaml"))])

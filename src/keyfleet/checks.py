@@ -139,9 +139,43 @@ def check_spare_unregistered(ledger: Ledger) -> list[Finding]:
     ]
 
 
+def check_recovery_codes(ledger: Ledger) -> list[Finding]:
+    """INFO when a tier that requires recovery codes has an account without a stored pointer."""
+    required = set(ledger.policy.require_recovery_codes_for)
+    findings: list[Finding] = []
+    for account in ledger.accounts:
+        if account.tier not in required:
+            continue
+        pointer = account.recovery_codes
+        if pointer is None:
+            detail = "has no recovery-code pointer"
+        elif not pointer.stored:
+            detail = "marks recovery codes as not stored"
+        else:
+            continue
+        findings.append(
+            Finding(
+                level=Level.INFO,
+                check="recovery-codes",
+                message=(
+                    f'{account.tier} "{account.label}" {detail} '
+                    f"(policy requires recovery codes for {account.tier})"
+                ),
+                account_id=account.id,
+            )
+        )
+    return findings
+
+
 #: Every check, in run order. Still to come in M1: capacity vs models.yaml
 #: and unknown-service ids vs services.yaml.
-ALL_CHECKS = (check_min_keys, check_lost_retired, check_weak_factors, check_spare_unregistered)
+ALL_CHECKS = (
+    check_min_keys,
+    check_lost_retired,
+    check_weak_factors,
+    check_spare_unregistered,
+    check_recovery_codes,
+)
 
 
 def run_checks(ledger: Ledger) -> list[Finding]:
