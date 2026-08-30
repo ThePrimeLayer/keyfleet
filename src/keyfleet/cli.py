@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.text import Text
 
 from keyfleet import report
+from keyfleet.bundled import load_bundled
 from keyfleet.checks import Level, run_checks
 from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
 
@@ -72,7 +73,7 @@ def check(
 ) -> None:
     """Report policy violations and coverage gaps; exit 1 if any FAIL finding."""
     model = _load(ledger, invalid_exit=2, hint=f"Run `keyfleet validate {ledger}` for details.")
-    findings = run_checks(model)
+    findings = run_checks(model, bundled=load_bundled())
     exit_code = 1 if any(finding.level is Level.FAIL for finding in findings) else 0
     if json_:
         # Plain print: --json output must stay bare JSON on stdout.

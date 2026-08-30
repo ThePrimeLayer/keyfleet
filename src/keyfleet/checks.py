@@ -10,7 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from keyfleet.model import Account, KeyStatus, Ledger
+from keyfleet.bundled import BundledData, discoverable_capacity, model_info_for_key
+from keyfleet.model import Account, KeyStatus, Ledger, RegistrationType
 
 
 class Level(StrEnum):
@@ -167,8 +168,74 @@ def check_recovery_codes(ledger: Ledger) -> list[Finding]:
     return findings
 
 
-#: Every check, in run order. Still to come in M1: capacity vs models.yaml
-#: and unknown-service ids vs services.yaml.
+#: Discoverable-credential usage fractions at which capacity findings appear.
+CAPACITY_INFO_AT = 0.5
+CAPACITY_WARN_AT = 0.9
+
+
+def check_capacity(ledger: Ledger, bundled: BundledData) -> list[Finding]:
+    """Discoverable-credential usage per key vs models.yaml capacity.
+
+    Ledger-based estimate — it can undercount (registrations made outside the
+    ledger are invisible). INFO from 50% usage, WARN from 90%.
+    """
+    counts: dict[str, int] = {}
+    for account in ledger.accounts:
+        for registration in account.registrations:
+            if registration.type is RegistrationType.FIDO2_DISCOVERABLE:
+                counts[registration.key] = counts.get(registration.key, 0) + 1
+    findings: list[Finding] = []
+    for key in ledger.keys:
+        count = counts.get(key.id, 0)
+        if not count:
+            continue
+        info = model_info_for_key(bundled.models, key)
+        capacity = discoverable_capacity(info, key.firmware) if info else None
+        if not capacity:
+            continue
+        usage = count / capacity
+        if usage >= CAPACITY_WARN_AT:
+            level, action = Level.WARN, "nearly full; free slots or add a key"
+        elif usage >= CAPACITY_INFO_AT:
+            level, action = Level.INFO, "plan capacity"
+        else:
+            continue
+        findings.append(
+            Finding(
+                level=level,
+                check="capacity",
+                message=(
+                    f"{key.id}: {count}/{capacity} discoverable credentials "
+                    f"(ledger count) — {action}"
+                ),
+                key_id=key.id,
+            )
+        )
+    return findings
+
+
+def check_unknown_service(ledger: Ledger, bundled: BundledData) -> list[Finding]:
+    """WARN when an account's service id names no bundled service ("other" is exempt).
+
+    Usually a typo; a correct id buys the account working links in
+    ``keyfleet lost`` and ``keyfleet report``.
+    """
+    return [
+        Finding(
+            level=Level.WARN,
+            check="unknown-service",
+            message=(
+                f'account "{account.label}": service "{account.service}" is not in the '
+                'bundled services.yaml — typo, or use "other" (contributions welcome)'
+            ),
+            account_id=account.id,
+        )
+        for account in ledger.accounts
+        if account.service != "other" and account.service not in bundled.services
+    ]
+
+
+#: Ledger-only checks, in run order.
 ALL_CHECKS = (
     check_min_keys,
     check_lost_retired,
@@ -177,10 +244,20 @@ ALL_CHECKS = (
     check_recovery_codes,
 )
 
+#: Checks that also need the bundled reference data.
+DATA_CHECKS = (check_capacity, check_unknown_service)
 
-def run_checks(ledger: Ledger) -> list[Finding]:
-    """Run every check; findings ordered FAIL → WARN → INFO, stable within a level."""
+
+def run_checks(ledger: Ledger, bundled: BundledData | None = None) -> list[Finding]:
+    """Run every check; findings ordered FAIL → WARN → INFO, stable within a level.
+
+    Without ``bundled``, the data-driven checks (capacity, unknown service)
+    are skipped.
+    """
     findings: list[Finding] = []
     for check in ALL_CHECKS:
         findings.extend(check(ledger))
+    if bundled is not None:
+        for data_check in DATA_CHECKS:
+            findings.extend(data_check(ledger, bundled))
     return sorted(findings, key=lambda finding: _LEVEL_ORDER[finding.level])
