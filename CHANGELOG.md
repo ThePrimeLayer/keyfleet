@@ -28,3 +28,4 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
   de-registration checklist.
 - Weak-factor check: WARN for every factor a tier's policy warns against
   (default: sms and email on T0 accounts).
+- Unregistered-spare check: WARN for spare keys registered on no account.

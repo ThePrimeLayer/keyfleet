@@ -119,9 +119,29 @@ def check_weak_factors(ledger: Ledger) -> list[Finding]:
     return findings
 
 
+def check_spare_unregistered(ledger: Ledger) -> list[Finding]:
+    """WARN for spare keys registered nowhere — an unregistered spare is not a backup."""
+    registered = {
+        registration.key for account in ledger.accounts for registration in account.registrations
+    }
+    return [
+        Finding(
+            level=Level.WARN,
+            check="spare-unregistered",
+            message=(
+                f"Spare key {key.id} is registered nowhere "
+                "(a spare that isn't registered is not a backup)"
+            ),
+            key_id=key.id,
+        )
+        for key in ledger.keys
+        if key.status is KeyStatus.SPARE and key.id not in registered
+    ]
+
+
 #: Every check, in run order. Still to come in M1: capacity vs models.yaml
 #: and unknown-service ids vs services.yaml.
-ALL_CHECKS = (check_min_keys, check_lost_retired, check_weak_factors)
+ALL_CHECKS = (check_min_keys, check_lost_retired, check_weak_factors, check_spare_unregistered)
 
 
 def run_checks(ledger: Ledger) -> list[Finding]:
