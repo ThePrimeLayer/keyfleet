@@ -18,18 +18,19 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 - [x] Tests: model + fixtures, checks, CLI exit codes, no-network grep of `src/`, schema sync, non-ASCII label (44 passing)
 - [x] Batch §15 questions to owner (one message, defaults proposed — see Open questions)
 
-### M1 — Core (brief §11)
+### M1 — Core (brief §11) — **done 2026-08-29**
 
-- [ ] Remaining checks: lost/retired-key hygiene (FAIL), weak factors per tier (WARN), unregistered spare (WARN), discoverable-credential capacity vs `models.yaml` (INFO), missing recovery-code pointer (INFO)
-- [ ] `keyfleet lost KEY_ID [--md]` — impact + ordered de-registration checklist with `services.yaml` links and registration nicknames
-- [ ] `keyfleet report [--md|--json]` — coverage matrix, per-tier summary, key utilization
-- [ ] `keyfleet advisories` — semantic firmware compare; unknown firmware → INFO
-- [ ] `keyfleet services [--search NAME]` and `keyfleet init`
-- [ ] Bundled data: `models.yaml`, `services.yaml` (≥30 services, verified `source_url` + `verified` dates, alphabetical), `advisories.yaml` (seed list) + data-integrity tests
-- [ ] Generated `docs/SERVICES.md` from `services.yaml`
-- [ ] Optional encrypted ledger: read `keyfleet.yaml.age` via `age` CLI, decrypt to memory only; test skipped when `age` absent
-- [ ] Golden files for `check`/`report` output
-- [ ] Cross-file validation note: warn (don't fail) when `account.service` is not in `services.yaml`
+- [x] Remaining checks: lost/retired-key hygiene (FAIL), weak factors per tier (WARN), unregistered spare (WARN), discoverable-credential capacity vs `models.yaml` (INFO ≥50% / WARN ≥90%), missing recovery-code pointer (INFO)
+- [x] `keyfleet lost KEY_ID [--md]` — impact + ordered de-registration checklist with `services.yaml` links and registration nicknames
+- [x] `keyfleet report [--md|--json]` — coverage matrix, per-tier summary, key utilization
+- [x] `keyfleet advisories` — firmware range compare; unknown firmware → set-firmware prompt
+- [x] `keyfleet services [--search NAME]` and `keyfleet init`
+- [x] Bundled data: `models.yaml` (4 families), `services.yaml` (32 services, verified `source_url` + `verified` dates, alphabetical), `advisories.yaml` (3 Yubico advisories) + data-integrity tests
+- [x] Generated `docs/SERVICES.md` from `services.yaml` (+ freshness test)
+- [x] Optional encrypted ledger: read `keyfleet.yaml.age` via `age` CLI, decrypt to memory only; round-trip tests skip when `age` absent (CI ubuntu installs it)
+- [x] Golden files for `check` (terminal + JSON), `report --md`, `lost --md`
+- [x] Cross-file check: WARN when `account.service` is not in `services.yaml` ("other" exempt)
+- Coverage on `checks.py` + `impact.py`: 100% (target ≥85%)
 
 ### M2 — Release (brief §11)
 
@@ -50,3 +51,4 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 
 <!-- - YYYY-MM-DD · harness · what changed · next: … · open: … -->
 - 2026-08-29 · claude-code · M0 complete: scaffold (uv/hatchling/CI/pre-commit), pydantic schema + secret rejection + JSON schema, `validate` + `check` (min-keys), example ledger, 44 tests green · next: M1 (remaining checks, `lost`/`report`/`advisories`/`services`/`init`, bundled data files, `.age`) · open: §15 license / policy defaults / name (defaults in use; PyPI free, GitHub org taken)
+- 2026-08-29 · claude-code · M1 complete: all 7 checks, `lost`/`report`/`advisories`/`services`/`init`, verified data files (32 services / 4 model families / 3 advisories), `.age` support, goldens, 138 tests + 4 age-skips, 100% cov on checks/impact · next: M2 (README + demo GIF, CONTRIBUTING/SECURITY, PyPI, tag v0.1.0) · open: none (owner confirmed §15 defaults)
