@@ -45,6 +45,15 @@ T0) — pending owner confirmation (§15 Q2). `min_keys` is a model with per-tie
 defaults rather than a bare dict, so a partial override like `{T0: 5}` keeps
 the defaults for T1/T2 instead of silently dropping their requirement.
 
+## 2026-08-29 — Owner answers to brief §15 (confirmed)
+
+The owner confirmed all recommended defaults in chat on 2026-08-29:
+1. **License: Apache-2.0** (over MIT).
+2. **Policy defaults kept**: `min_keys T0: 3, T1: 2, T2: 1` stay the schema
+   defaults, overridable per ledger.
+3. **Name: `keyfleet`** — free on PyPI (checked 2026-08-29); the GitHub org
+   name is taken (private/empty) but the repo lives under the owner's account.
+
 ## 2026-08-29 — Secret detection: name heuristics + value heuristics
 
 Brief §13 requires rejecting secret-looking content. Decision: scan the raw
