@@ -32,6 +32,9 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Recovery-code pointer check: INFO for accounts in tiers listed in
   `policy.require_recovery_codes_for` (default T0+T1) that have no stored
   recovery-code pointer.
+- `keyfleet lost KEY_ID [--md]` — lost-key impact analysis and an ordered
+  de-registration checklist (tier first, becomes-inaccessible first) with the
+  registration nicknames to delete and each service's security-settings URL.
 - Bundled reference data, every fact verified on the vendor's own page (or
   `null`, never guessed): `services.yaml` with 32 services (settings URLs,
   documented key limits, passkey support), `models.yaml` with

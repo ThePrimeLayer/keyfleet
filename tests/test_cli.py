@@ -98,3 +98,45 @@ class TestCheck:
     def test_missing_file_exits_2(self, tmp_path):
         result = runner.invoke(app, ["check", str(tmp_path / "absent.yaml")])
         assert result.exit_code == 2
+
+
+class TestLost:
+    def test_checklist_orders_by_tier_and_links_settings(self):
+        result = runner.invoke(app, ["lost", "k-main", str(fixture("min_keys_gap.yaml"))])
+        assert result.exit_code == 0, all_output(result)
+        out = result.output
+        assert 'keyfleet lost — k-main "Main key" (status: active)' in out
+        # g-mail (T0) must precede repo (T1); google's settings URL comes
+        # from the bundled services.yaml.
+        assert out.index("Primary email") < out.index("Code hosting")
+        assert "myaccount.google.com" in out
+        assert "affected account" in out
+
+    def test_md_variant_emits_markdown_checklist(self):
+        result = runner.invoke(app, ["lost", "k-main", "--md", str(fixture("min_keys_gap.yaml"))])
+        assert result.exit_code == 0
+        assert result.output.startswith('# Lost key: k-main — "Main key"')
+        assert "- [ ] **T0 Primary email (Google)**" in result.output
+        assert 'delete "main" (fido2-discoverable)' in result.output
+        assert "set `status: lost` on k-main" in result.output
+
+    def test_unknown_key_exits_2_listing_known_ids(self):
+        result = runner.invoke(app, ["lost", "k-nope", str(fixture("min_keys_gap.yaml"))])
+        assert result.exit_code == 2
+        assert 'no key with id "k-nope"' in all_output(result)
+        assert "k-desk" in all_output(result)
+
+    def test_low_impact_key_still_reports(self):
+        result = runner.invoke(app, ["lost", "k-desk", str(fixture("min_keys_gap.yaml"))])
+        assert result.exit_code == 0
+        assert "Chat" in result.output
+
+    def test_unregistered_key_says_nothing_to_deregister(self, tmp_path):
+        path = tmp_path / "ledger.yaml"
+        path.write_text(
+            "version: 1\nkeys: [{id: k-solo, label: Solo, vendor: other}]\naccounts: []\n",
+            encoding="utf-8",
+        )
+        result = runner.invoke(app, ["lost", "k-solo", str(path)])
+        assert result.exit_code == 0
+        assert "nothing to de-register" in result.output

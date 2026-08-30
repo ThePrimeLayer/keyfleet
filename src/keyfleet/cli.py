@@ -15,6 +15,7 @@ from rich.text import Text
 from keyfleet import report
 from keyfleet.bundled import load_bundled
 from keyfleet.checks import Level, run_checks
+from keyfleet.impact import UnknownKeyError, analyze_lost
 from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -81,3 +82,22 @@ def check(
     else:
         report.render_check(model, findings, exit_code, _out)
     raise typer.Exit(exit_code)
+
+
+@app.command()
+def lost(
+    key_id: Annotated[str, typer.Argument(metavar="KEY_ID", help="Id of the lost key.")],
+    ledger: LedgerArg = DEFAULT_LEDGER,
+    md: Annotated[bool, typer.Option("--md", help="Markdown checklist on stdout.")] = False,
+) -> None:
+    """Impact of losing KEY_ID: ordered de-registration checklist with links."""
+    model = _load(ledger, invalid_exit=2, hint=f"Run `keyfleet validate {ledger}` for details.")
+    try:
+        result = analyze_lost(model, key_id)
+    except UnknownKeyError as exc:
+        _err.print(str(exc), style="red", soft_wrap=True)
+        raise typer.Exit(2) from exc
+    if md:
+        print(report.lost_markdown(result, load_bundled()), end="")
+    else:
+        report.render_lost(result, load_bundled(), _out)
