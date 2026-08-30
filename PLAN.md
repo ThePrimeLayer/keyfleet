@@ -38,7 +38,7 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 - [x] Demo GIF (`check` → FAIL → `lost yk-old` → checklist) — real output rendered by `scripts/gen_demo_gif.py`
 - [x] `CONTRIBUTING.md` ("the ten-minute service PR") + `SECURITY.md`
 - [x] JSON schema shipped in repo + sdist — `$id` still pending the final repo URL (owner)
-- [ ] CI green on 3 OSes — workflow ready; runs on first push to GitHub
+- [x] CI green on 3 OSes (2026-08-30, run 33301094202; ubuntu ran the age round-trip: 142 passed, 0 skipped)
 - [x] README quick start executed literally from a clean clone (2026-08-30: sync, check, lost, full test suite)
 - [x] `uv build` wheel + sdist OK (data files packaged; wheel smoke-tested via `uvx --from`); CHANGELOG 0.1.0 section; tag `v0.1.0` (local — push after CI is green)
 - [ ] PyPI publish (owner credentials / trusted publishing)
@@ -55,3 +55,4 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 - 2026-08-29 · claude-code · M0 complete: scaffold (uv/hatchling/CI/pre-commit), pydantic schema + secret rejection + JSON schema, `validate` + `check` (min-keys), example ledger, 44 tests green · next: M1 (remaining checks, `lost`/`report`/`advisories`/`services`/`init`, bundled data files, `.age`) · open: §15 license / policy defaults / name (defaults in use; PyPI free, GitHub org taken)
 - 2026-08-29 · claude-code · M1 complete: all 7 checks, `lost`/`report`/`advisories`/`services`/`init`, verified data files (32 services / 4 model families / 3 advisories), `.age` support, goldens, 138 tests + 4 age-skips, 100% cov on checks/impact · next: M2 (README + demo GIF, CONTRIBUTING/SECURITY, PyPI, tag v0.1.0) · open: none (owner confirmed §15 defaults)
 - 2026-08-30 · claude-code · M2 code-complete: README + aha paragraph + demo.gif (generated from real output), CONTRIBUTING/SECURITY, v0.1.0 version + changelog, wheel built and smoke-tested from isolation, quick start verified from a clean clone, tag v0.1.0 local · next: owner creates GitHub repo + pushes (CI must go green), then PyPI publish + push tag · open: GitHub owner/repo for badges + schema $id; PyPI publish method
+- 2026-08-30 · claude-code · Published: repo live at github.com/ThePrimeLayer/keyfleet, badges/$id/urls point there, release.yml (trusted publishing) added, setup-uv pinned v10.0.1 after a missing-floating-tag CI failure, CI green on all 3 OSes (age round-trip exercised) · next: owner logs into PyPI → register pending publisher → push v0.1.0 tag → verify on PyPI + GitHub release · open: PyPI login (browser tab waiting)
