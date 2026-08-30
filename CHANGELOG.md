@@ -26,3 +26,5 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Lost/retired hygiene check: FAIL for every lost or retired key that is still
   registered on any account, pointing at `keyfleet lost KEY` for the
   de-registration checklist.
+- Weak-factor check: WARN for every factor a tier's policy warns against
+  (default: sms and email on T0 accounts).

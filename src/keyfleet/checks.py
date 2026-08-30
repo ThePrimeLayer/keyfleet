@@ -101,9 +101,27 @@ def check_lost_retired(ledger: Ledger) -> list[Finding]:
     return findings
 
 
+def check_weak_factors(ledger: Ledger) -> list[Finding]:
+    """WARN for every factor an account carries that its tier's policy warns against."""
+    findings: list[Finding] = []
+    for account in ledger.accounts:
+        warned = ledger.policy.warn_factors.get(account.tier, [])
+        findings.extend(
+            Finding(
+                level=Level.WARN,
+                check="weak-factor",
+                message=f'{account.tier} "{account.label}" lists {factor.value} as a factor',
+                account_id=account.id,
+            )
+            for factor in account.other_factors
+            if factor in warned
+        )
+    return findings
+
+
 #: Every check, in run order. Still to come in M1: capacity vs models.yaml
 #: and unknown-service ids vs services.yaml.
-ALL_CHECKS = (check_min_keys, check_lost_retired)
+ALL_CHECKS = (check_min_keys, check_lost_retired, check_weak_factors)
 
 
 def run_checks(ledger: Ledger) -> list[Finding]:
