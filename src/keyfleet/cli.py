@@ -12,6 +12,8 @@ import typer
 from rich.console import Console
 from rich.text import Text
 
+from keyfleet import report
+from keyfleet.checks import Level, run_checks
 from keyfleet.model import Ledger, LedgerError, LedgerNotFoundError, load_ledger
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -59,3 +61,22 @@ def validate(ledger: LedgerArg = DEFAULT_LEDGER) -> None:
         ),
         soft_wrap=True,
     )
+
+
+@app.command()
+def check(
+    ledger: LedgerArg = DEFAULT_LEDGER,
+    json_: Annotated[
+        bool, typer.Option("--json", help="Machine-readable findings on stdout.")
+    ] = False,
+) -> None:
+    """Report policy violations and coverage gaps; exit 1 if any FAIL finding."""
+    model = _load(ledger, invalid_exit=2, hint=f"Run `keyfleet validate {ledger}` for details.")
+    findings = run_checks(model)
+    exit_code = 1 if any(finding.level is Level.FAIL for finding in findings) else 0
+    if json_:
+        # Plain print: --json output must stay bare JSON on stdout.
+        print(report.check_json(model, findings, exit_code, ledger_path=str(ledger)))
+    else:
+        report.render_check(model, findings, exit_code, _out)
+    raise typer.Exit(exit_code)

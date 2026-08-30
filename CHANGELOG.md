@@ -19,3 +19,7 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Published JSON Schema at `schema/keyfleet.schema.json` for editor
   completion, generated from the models.
 - Fictional example ledger `keyfleet.example.yaml`.
+- `keyfleet check [LEDGER] [--json]` with the min-keys coverage rule: FAIL for
+  every account holding fewer active/spare keys than `policy.min_keys[tier]`
+  (defaults T0:3, T1:2, T2:1); lost/retired keys never count. Exit 1 when any
+  FAIL finding exists.
