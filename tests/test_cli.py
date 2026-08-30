@@ -140,3 +140,38 @@ class TestLost:
         result = runner.invoke(app, ["lost", "k-solo", str(path)])
         assert result.exit_code == 0
         assert "nothing to de-register" in result.output
+
+
+class TestReport:
+    def test_terminal_report_shows_three_sections(self):
+        result = runner.invoke(app, ["report", str(fixture("valid.yaml"))])
+        assert result.exit_code == 0, all_output(result)
+        out = result.output
+        assert "keyfleet report — 3 keys (2 active, 1 spare) · 3 accounts" in out
+        for section in ("Coverage matrix", "Per-tier summary", "Key utilization"):
+            assert section in out
+
+    def test_markdown_report_has_matrix_and_capacity(self):
+        result = runner.invoke(app, ["report", "--md", str(fixture("valid.yaml"))])
+        assert result.exit_code == 0
+        out = result.output
+        assert "## Coverage matrix" in out
+        assert "| Password manager | T0 | fido2 | fido2 | fido2 | 3/3 OK |" in out
+        # yk-a is a YubiKey 5C NFC on 5.7.1 → capacity 100 via bundled models.yaml.
+        assert "| yk-a | active | 3 | 1/100 |" in out
+
+    def test_json_report_parses_and_carries_matrix(self):
+        result = runner.invoke(app, ["report", "--json", str(fixture("valid.yaml"))])
+        assert result.exit_code == 0
+        payload = json.loads(result.stdout)
+        assert payload["matrix"]["keys"] == ["yk-a", "yk-b", "spare-c"]
+        assert len(payload["matrix"]["accounts"]) == 3
+        vault = payload["matrix"]["accounts"][0]
+        assert vault["meets_policy"] is True
+        assert vault["cells"]["yk-a"] == "fido2"
+        tiers = {row["tier"]: row for row in payload["tiers"]}
+        assert tiers["T0"]["accounts"] == 1 and tiers["T0"]["meeting_policy"] == 1
+
+    def test_md_and_json_together_is_usage_error(self):
+        result = runner.invoke(app, ["report", "--md", "--json", str(fixture("valid.yaml"))])
+        assert result.exit_code == 2

@@ -101,3 +101,25 @@ def lost(
         print(report.lost_markdown(result, load_bundled()), end="")
     else:
         report.render_lost(result, load_bundled(), _out)
+
+
+@app.command("report")
+def report_cmd(
+    ledger: LedgerArg = DEFAULT_LEDGER,
+    md: Annotated[bool, typer.Option("--md", help="Markdown tables on stdout.")] = False,
+    json_: Annotated[
+        bool, typer.Option("--json", help="Machine-readable report on stdout.")
+    ] = False,
+) -> None:
+    """Coverage matrix (accounts x keys), per-tier summary, key utilization."""
+    if md and json_:
+        _err.print("choose one of --md or --json, not both", style="red")
+        raise typer.Exit(2)
+    model = _load(ledger, invalid_exit=2, hint=f"Run `keyfleet validate {ledger}` for details.")
+    data = report.report_data(model, load_bundled())
+    if json_:
+        print(report.report_json(data))
+    elif md:
+        print(report.report_markdown(model, data), end="")
+    else:
+        report.render_report(model, data, _out)

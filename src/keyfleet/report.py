@@ -8,14 +8,16 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from typing import Any
 
 from rich.console import Console
+from rich.table import Table
 from rich.text import Text
 
-from keyfleet.bundled import BundledData
-from keyfleet.checks import Finding, Level
+from keyfleet.bundled import BundledData, discoverable_capacity, model_info_for_key
+from keyfleet.checks import Finding, Level, covering_key_ids
 from keyfleet.impact import AccountImpact, LostImpact
-from keyfleet.model import KeyStatus, Ledger, Registration
+from keyfleet.model import KeyStatus, Ledger, Registration, RegistrationType, Tier
 
 LEVEL_STYLES = {Level.FAIL: "bold red", Level.WARN: "bold yellow", Level.INFO: "bold cyan"}
 
@@ -24,14 +26,14 @@ def _plural(count: int, noun: str) -> str:
     return f"{count} {noun}" if count == 1 else f"{count} {noun}s"
 
 
-def ledger_header(ledger: Ledger) -> str:
+def ledger_header(ledger: Ledger, command: str = "check") -> str:
     """e.g. ``keyfleet check — 3 keys (2 active, 1 spare) · 14 accounts``."""
     by_status = Counter(key.status for key in ledger.keys)
     breakdown = ", ".join(f"{by_status[s]} {s.value}" for s in KeyStatus if by_status[s])
     keys = _plural(len(ledger.keys), "key")
     if breakdown:
         keys += f" ({breakdown})"
-    return f"keyfleet check — {keys} · {_plural(len(ledger.accounts), 'account')}"
+    return f"keyfleet {command} — {keys} · {_plural(len(ledger.accounts), 'account')}"
 
 
 def summary_line(findings: list[Finding], exit_code: int) -> str:
@@ -162,6 +164,175 @@ def lost_markdown(result: LostImpact, bundled: BundledData) -> str:
     if followup:
         lines += ["", followup]
     return "\n".join(lines) + "\n"
+
+
+# --- keyfleet report ---------------------------------------------------------
+
+#: Short registration-type labels for matrix cells; the legend explains them.
+TYPE_ABBREV = {
+    RegistrationType.FIDO2_DISCOVERABLE: "disc",
+    RegistrationType.FIDO2_NON_DISCOVERABLE: "fido2",
+    RegistrationType.U2F: "u2f",
+    RegistrationType.PIV: "piv",
+    RegistrationType.OATH_TOTP: "totp",
+    RegistrationType.YUBICO_OTP: "otp",
+    RegistrationType.OPENPGP: "pgp",
+}
+
+_LEGEND = (
+    "disc = FIDO2 discoverable (passkey) · fido2 = FIDO2 non-discoverable · "
+    "totp = OATH-TOTP · otp = Yubico OTP · pgp = OpenPGP"
+)
+
+
+def report_data(ledger: Ledger, bundled: BundledData) -> dict[str, Any]:
+    """Everything ``keyfleet report`` shows, as plain data (drives all formats)."""
+    key_ids = [key.id for key in ledger.keys]
+    accounts = []
+    for account in ledger.accounts:
+        by_key: dict[str, list[str]] = {}
+        for registration in account.registrations:
+            by_key.setdefault(registration.key, []).append(TYPE_ABBREV[registration.type])
+        counted = len(covering_key_ids(ledger, account))
+        required = ledger.policy.min_keys.for_tier(account.tier)
+        accounts.append(
+            {
+                "account_id": account.id,
+                "label": account.label,
+                "tier": account.tier.value,
+                "cells": {key_id: "+".join(by_key.get(key_id, [])) or None for key_id in key_ids},
+                "keys": counted,
+                "required": required,
+                "meets_policy": counted >= required,
+            }
+        )
+    tiers = []
+    for tier in Tier:
+        rows = [row for row in accounts if row["tier"] == tier.value]
+        tiers.append(
+            {
+                "tier": tier.value,
+                "accounts": len(rows),
+                "meeting_policy": sum(row["meets_policy"] for row in rows),
+                "min_keys": ledger.policy.min_keys.for_tier(tier),
+            }
+        )
+    keys = []
+    for key in ledger.keys:
+        used_by = sum(
+            1
+            for account in ledger.accounts
+            if any(registration.key == key.id for registration in account.registrations)
+        )
+        discoverable = sum(
+            1
+            for account in ledger.accounts
+            for registration in account.registrations
+            if registration.key == key.id
+            and registration.type is RegistrationType.FIDO2_DISCOVERABLE
+        )
+        info = model_info_for_key(bundled.models, key)
+        capacity = discoverable_capacity(info, key.firmware) if info else None
+        keys.append(
+            {
+                "key_id": key.id,
+                "label": key.label,
+                "status": key.status.value,
+                "accounts": used_by,
+                "discoverable": discoverable,
+                "discoverable_capacity": capacity,
+            }
+        )
+    return {"matrix": {"keys": key_ids, "accounts": accounts}, "tiers": tiers, "keys": keys}
+
+
+def _coverage_cell(row: dict[str, Any]) -> tuple[str, str]:
+    mark = "OK" if row["meets_policy"] else "SHORT"
+    return f"{row['keys']}/{row['required']} {mark}", (
+        "green" if row["meets_policy"] else "bold red"
+    )
+
+
+def _discoverable_cell(row: dict[str, Any]) -> str:
+    if row["discoverable_capacity"] is not None:
+        return f"{row['discoverable']}/{row['discoverable_capacity']}"
+    return str(row["discoverable"])
+
+
+def render_report(ledger: Ledger, data: dict[str, Any], console: Console) -> None:
+    """Terminal report: coverage matrix, per-tier summary, key utilization."""
+    console.print(ledger_header(ledger, "report"), style="bold", soft_wrap=True)
+    console.print()
+
+    matrix = Table(title="Coverage matrix", title_justify="left")
+    matrix.add_column("Account")
+    matrix.add_column("Tier")
+    for key_id in data["matrix"]["keys"]:
+        matrix.add_column(key_id)
+    matrix.add_column("Keys")
+    for row in data["matrix"]["accounts"]:
+        state, style = _coverage_cell(row)
+        matrix.add_row(
+            row["label"],
+            row["tier"],
+            *[row["cells"][key_id] or "—" for key_id in data["matrix"]["keys"]],
+            Text(state, style=style),
+        )
+    console.print(matrix)
+    console.print(_LEGEND, style="dim", soft_wrap=True)
+    console.print()
+
+    tiers = Table(title="Per-tier summary", title_justify="left")
+    tiers.add_column("Tier")
+    tiers.add_column("Accounts", justify="right")
+    tiers.add_column("Meeting policy", justify="right")
+    tiers.add_column("Min keys", justify="right")
+    for row in data["tiers"]:
+        tiers.add_row(
+            row["tier"], str(row["accounts"]), str(row["meeting_policy"]), str(row["min_keys"])
+        )
+    console.print(tiers)
+    console.print()
+
+    keys = Table(title="Key utilization", title_justify="left")
+    keys.add_column("Key")
+    keys.add_column("Status")
+    keys.add_column("Accounts", justify="right")
+    keys.add_column("Discoverable", justify="right")
+    for row in data["keys"]:
+        keys.add_row(row["key_id"], row["status"], str(row["accounts"]), _discoverable_cell(row))
+    console.print(keys)
+
+
+def report_markdown(ledger: Ledger, data: dict[str, Any]) -> str:
+    """The same report as markdown tables (``keyfleet report --md``)."""
+    key_ids = data["matrix"]["keys"]
+    lines = [f"# {ledger_header(ledger, 'report')}", "", "## Coverage matrix", ""]
+    lines.append("| Account | Tier | " + " | ".join(key_ids) + " | Keys |")
+    lines.append("|---|---|" + "---|" * len(key_ids) + "---|")
+    for row in data["matrix"]["accounts"]:
+        state, _ = _coverage_cell(row)
+        cells = " | ".join(row["cells"][key_id] or "—" for key_id in key_ids)
+        lines.append(f"| {row['label']} | {row['tier']} | {cells} | {state} |")
+    lines += ["", f"_{_LEGEND}_", "", "## Per-tier summary", ""]
+    lines.append("| Tier | Accounts | Meeting policy | Min keys |")
+    lines.append("|---|---|---|---|")
+    for row in data["tiers"]:
+        lines.append(
+            f"| {row['tier']} | {row['accounts']} | {row['meeting_policy']} | {row['min_keys']} |"
+        )
+    lines += ["", "## Key utilization", ""]
+    lines.append("| Key | Status | Accounts | Discoverable |")
+    lines.append("|---|---|---|---|")
+    for row in data["keys"]:
+        lines.append(
+            f"| {row['key_id']} | {row['status']} | {row['accounts']} | {_discoverable_cell(row)} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def report_json(data: dict[str, Any]) -> str:
+    return json.dumps(data, indent=2)
 
 
 def check_json(ledger: Ledger, findings: list[Finding], exit_code: int, ledger_path: str) -> str:

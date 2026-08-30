@@ -32,6 +32,9 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 - Recovery-code pointer check: INFO for accounts in tiers listed in
   `policy.require_recovery_codes_for` (default T0+T1) that have no stored
   recovery-code pointer.
+- `keyfleet report [--md|--json]` — coverage matrix (accounts x keys with
+  registration types), per-tier summary, and key utilization including
+  discoverable-credential usage against known capacities.
 - `keyfleet lost KEY_ID [--md]` — lost-key impact analysis and an ordered
   de-registration checklist (tier first, becomes-inaccessible first) with the
   registration nicknames to delete and each service's security-settings URL.
