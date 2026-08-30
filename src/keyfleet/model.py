@@ -248,7 +248,11 @@ def ledger_json_schema() -> dict[str, Any]:
     """The JSON Schema published as schema/keyfleet.schema.json."""
     schema = Ledger.model_json_schema()
     schema["title"] = "keyfleet ledger"
-    return {"$schema": "https://json-schema.org/draft/2020-12/schema", **schema}
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://raw.githubusercontent.com/ThePrimeLayer/keyfleet/main/schema/keyfleet.schema.json",
+        **schema,
+    }
 
 
 # --- Secret rejection (brief §13) -------------------------------------------

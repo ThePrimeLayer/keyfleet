@@ -25,6 +25,11 @@ dependencies = [
     "typer>=0.12",
 ]
 
+[project.urls]
+Repository = "https://github.com/ThePrimeLayer/keyfleet"
+Issues = "https://github.com/ThePrimeLayer/keyfleet/issues"
+Changelog = "https://github.com/ThePrimeLayer/keyfleet/blob/main/CHANGELOG.md"
+
 [project.scripts]
 keyfleet = "keyfleet.cli:app"
 

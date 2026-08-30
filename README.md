@@ -2,9 +2,7 @@
 
 > Your YubiKey can't tell you which accounts it's registered to. keyfleet can.
 
-<!-- Badges assume github.com/OWNER/keyfleet — replace OWNER when the repo is
-     created (open item in PLAN.md). The PyPI badges resolve after first publish. -->
-[![ci](https://github.com/OWNER/keyfleet/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/keyfleet/actions/workflows/ci.yml)
+[![ci](https://github.com/ThePrimeLayer/keyfleet/actions/workflows/ci.yml/badge.svg)](https://github.com/ThePrimeLayer/keyfleet/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/keyfleet)](https://pypi.org/project/keyfleet/)
 [![Python](https://img.shields.io/pypi/pyversions/keyfleet)](https://pypi.org/project/keyfleet/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -21,7 +19,7 @@ each registration — then answers the questions the keys themselves can't:
 It stores **no secrets** (validation refuses anything that looks like one) and
 makes **no network calls, ever** — both enforced by tests.
 
-![keyfleet demo: check finds a lost key still registered, lost prints the ordered de-registration checklist](docs/demo.gif)
+![keyfleet demo: check finds a lost key still registered, lost prints the ordered de-registration checklist](https://raw.githubusercontent.com/ThePrimeLayer/keyfleet/main/docs/demo.gif)
 
 ## Why a ledger? Your key literally cannot tell you.
 

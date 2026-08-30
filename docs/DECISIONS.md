@@ -54,6 +54,14 @@ The owner confirmed all recommended defaults in chat on 2026-08-29:
 3. **Name: `keyfleet`** — free on PyPI (checked 2026-08-29); the GitHub org
    name is taken (private/empty) but the repo lives under the owner's account.
 
+## 2026-08-30 — PyPI releases via trusted publishing on tag push
+
+Publishing runs in `.github/workflows/release.yml` on `v*` tags using PyPI
+trusted publishing (OIDC through the `pypi` environment) — no long-lived API
+token exists anywhere. Alternative considered: manual `uv publish` with a
+token (rejected: token storage + bus-factor). Repo home confirmed as
+github.com/ThePrimeLayer/keyfleet; schema `$id` and badges point there.
+
 ## 2026-08-29 — age identities via KEYFLEET_AGE_IDENTITY; informational commands exit 0
 
 `.age` decryption shells out to the `age` CLI (decrypt to memory only). For
