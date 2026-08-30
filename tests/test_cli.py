@@ -251,3 +251,28 @@ class TestInit:
         lines = (tmp_path / ".gitignore").read_text(encoding="utf-8").splitlines()
         assert lines[0] == ".venv/"
         assert "keyfleet.yaml" in lines
+
+    def test_messages_name_absolute_paths(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 0
+        assert str(tmp_path / "keyfleet.example.yaml") in result.output
+
+    def test_unwritable_directory_fails_cleanly(self, tmp_path, monkeypatch):
+        # Simulates a terminal opened in an unwritable directory (the Windows
+        # System32 default): exit 2, a cd hint, and no traceback.
+        from pathlib import Path
+
+        monkeypatch.chdir(tmp_path)
+
+        def denied(self, *args, **kwargs):
+            raise PermissionError(13, "Permission denied", str(self))
+
+        monkeypatch.setattr(Path, "write_text", denied)
+        result = runner.invoke(app, ["init"])
+        assert result.exit_code == 2
+        out = all_output(result)
+        assert "is not writable" in out
+        assert "Permission denied" in out
+        assert "cd to where your ledger should live" in out
+        assert "Traceback" not in out

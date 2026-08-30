@@ -164,29 +164,45 @@ _GITIGNORE_ENTRY = "keyfleet.yaml"
 @app.command()
 def init() -> None:
     """Write keyfleet.example.yaml here and gitignore keyfleet.yaml (never commit a real ledger)."""
-    example = Path("keyfleet.example.yaml")
-    if example.exists():
-        _out.print(f"{example} already exists — leaving it untouched.", soft_wrap=True)
-    else:
-        example.write_text(example_ledger_text(), encoding="utf-8")
-        _out.print(f"Wrote {example} (fictional).", soft_wrap=True)
-
-    gitignore = Path(".gitignore")
-    if gitignore.exists():
-        lines = gitignore.read_text(encoding="utf-8").splitlines()
-        if _GITIGNORE_ENTRY in (line.strip() for line in lines):
-            _out.print(f".gitignore already covers {_GITIGNORE_ENTRY}.", soft_wrap=True)
+    target_dir = Path.cwd()
+    example = target_dir / "keyfleet.example.yaml"
+    gitignore = target_dir / ".gitignore"
+    try:
+        if example.exists():
+            _out.print(f"{example} already exists — leaving it untouched.", soft_wrap=True)
         else:
-            content = "\n".join(
-                [*lines, "# keyfleet: never commit a real ledger", _GITIGNORE_ENTRY]
+            example.write_text(example_ledger_text(), encoding="utf-8")
+            _out.print(f"Wrote {example} (fictional).", soft_wrap=True)
+
+        if gitignore.exists():
+            lines = gitignore.read_text(encoding="utf-8").splitlines()
+            if _GITIGNORE_ENTRY in (line.strip() for line in lines):
+                _out.print(f".gitignore already covers {_GITIGNORE_ENTRY}.", soft_wrap=True)
+            else:
+                content = "\n".join(
+                    [*lines, "# keyfleet: never commit a real ledger", _GITIGNORE_ENTRY]
+                )
+                gitignore.write_text(content + "\n", encoding="utf-8")
+                _out.print(f"Added {_GITIGNORE_ENTRY} to .gitignore.", soft_wrap=True)
+        else:
+            gitignore.write_text(
+                f"# keyfleet: never commit a real ledger\n{_GITIGNORE_ENTRY}\n", encoding="utf-8"
             )
-            gitignore.write_text(content + "\n", encoding="utf-8")
-            _out.print(f"Added {_GITIGNORE_ENTRY} to .gitignore.", soft_wrap=True)
-    else:
-        gitignore.write_text(
-            f"# keyfleet: never commit a real ledger\n{_GITIGNORE_ENTRY}\n", encoding="utf-8"
+            _out.print(f"Created {gitignore} with {_GITIGNORE_ENTRY}.", soft_wrap=True)
+    except OSError as exc:
+        # Terminals often open in an unwritable directory (e.g. Windows starts
+        # elevated shells in C:\Windows\System32) — fail with directions, not
+        # a traceback.
+        reason = exc.strerror or str(exc)
+        _err.print(
+            f"keyfleet init writes into the current directory, and {target_dir} "
+            f"is not writable ({reason} on {exc.filename or 'a file'}).\n"
+            "cd to where your ledger should live — a documents folder or a "
+            "private repo — and run `keyfleet init` again.",
+            style="red",
+            soft_wrap=True,
         )
-        _out.print(f"Created .gitignore with {_GITIGNORE_ENTRY}.", soft_wrap=True)
+        raise typer.Exit(2) from exc
 
     _out.print(
         "\nNext: copy keyfleet.example.yaml to keyfleet.yaml, make it yours, then run "
