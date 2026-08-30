@@ -70,9 +70,40 @@ def check_min_keys(ledger: Ledger) -> list[Finding]:
     return findings
 
 
-#: Every check, in run order. M1 adds lost/retired hygiene, weak factors,
-#: unregistered spares, capacity, and recovery-code pointers.
-ALL_CHECKS = (check_min_keys,)
+def check_lost_retired(ledger: Ledger) -> list[Finding]:
+    """FAIL for every lost/retired key still carrying registrations.
+
+    Whoever holds the key can still use those credentials — de-register them
+    (``keyfleet lost KEY`` prints the ordered checklist).
+    """
+    accounts_using: dict[str, int] = {}
+    for account in ledger.accounts:
+        for key_id in {registration.key for registration in account.registrations}:
+            accounts_using[key_id] = accounts_using.get(key_id, 0) + 1
+    findings: list[Finding] = []
+    for key in ledger.keys:
+        if key.status not in (KeyStatus.LOST, KeyStatus.RETIRED):
+            continue
+        count = accounts_using.get(key.id, 0)
+        if count:
+            noun = "account" if count == 1 else "accounts"
+            findings.append(
+                Finding(
+                    level=Level.FAIL,
+                    check="lost-retired",
+                    message=(
+                        f"Key {key.id} is {key.status.value.upper()} but still registered "
+                        f"on {count} {noun} → run: keyfleet lost {key.id}"
+                    ),
+                    key_id=key.id,
+                )
+            )
+    return findings
+
+
+#: Every check, in run order. Still to come in M1: capacity vs models.yaml
+#: and unknown-service ids vs services.yaml.
+ALL_CHECKS = (check_min_keys, check_lost_retired)
 
 
 def run_checks(ledger: Ledger) -> list[Finding]:

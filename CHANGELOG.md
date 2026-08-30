@@ -23,3 +23,6 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
   every account holding fewer active/spare keys than `policy.min_keys[tier]`
   (defaults T0:3, T1:2, T2:1); lost/retired keys never count. Exit 1 when any
   FAIL finding exists.
+- Lost/retired hygiene check: FAIL for every lost or retired key that is still
+  registered on any account, pointing at `keyfleet lost KEY` for the
+  de-registration checklist.
