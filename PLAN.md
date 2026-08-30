@@ -5,18 +5,18 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 
 ## Milestones
 
-### M0 — Scaffold (brief §11)
+### M0 — Scaffold (brief §11) — **done 2026-08-29**
 
-- [ ] Repo scaffold: git init, pyproject (uv, hatchling, src layout), `.gitignore`, LICENSE (Apache-2.0 pending Q1), `CHANGELOG.md`, README stub, `.python-version`
-- [ ] Tooling: `.pre-commit-config.yaml` (ruff v0.16.5 + gitleaks v8.30.1, exact pins), GitHub Actions CI on ubuntu/windows/macos
-- [ ] Ledger schema in `model.py` (pydantic v2, `extra="forbid"`) + loader with which-file/which-id/which-field errors
-- [ ] Secret rejection: field names (`secret`, `seed`, `pin`, `otp`, `code(s)`, …) and value shapes (`otpauth://`, long base32, digit-group codes)
-- [ ] `schema/keyfleet.schema.json` generated from the models + sync test
-- [ ] `keyfleet validate` (exit 0 valid / 1 invalid / 2 missing file or usage)
-- [ ] `keyfleet check [--json]` with min-keys rule (distinct active|spare keys vs `policy.min_keys[tier]`); exit 1 on FAIL findings
-- [ ] `keyfleet.example.yaml` (fictional; one deliberate T1 gap to demo a FAIL)
-- [ ] Tests: model + fixtures, checks, CLI exit codes, no-network grep of `src/`, schema sync, non-ASCII label
-- [ ] Batch §15 questions to owner (one message, defaults proposed)
+- [x] Repo scaffold: git init, pyproject (uv, hatchling, src layout), `.gitignore`, LICENSE (Apache-2.0 pending Q1), `CHANGELOG.md`, README stub, `.python-version`
+- [x] Tooling: `.pre-commit-config.yaml` (ruff v0.16.5 + gitleaks v8.30.1, exact pins; all hooks run green), GitHub Actions CI on ubuntu/windows/macos (not yet exercised — no remote)
+- [x] Ledger schema in `model.py` (pydantic v2, `extra="forbid"`) + loader with which-file/which-id/which-field errors
+- [x] Secret rejection: field names (`secret`, `seed`, `pin`, `otp`, `code(s)`, …) and value shapes (`otpauth://`, long base32, digit-group codes)
+- [x] `schema/keyfleet.schema.json` generated from the models + sync test
+- [x] `keyfleet validate` (exit 0 valid / 1 invalid / 2 missing file or usage)
+- [x] `keyfleet check [--json]` with min-keys rule (distinct active|spare keys vs `policy.min_keys[tier]`); exit 1 on FAIL findings
+- [x] `keyfleet.example.yaml` (fictional; one deliberate T1 gap to demo a FAIL)
+- [x] Tests: model + fixtures, checks, CLI exit codes, no-network grep of `src/`, schema sync, non-ASCII label (44 passing)
+- [x] Batch §15 questions to owner (one message, defaults proposed — see Open questions)
 
 ### M1 — Core (brief §11)
 
@@ -49,3 +49,4 @@ Do not rewrite milestones without owner agreement (AGENTS.md §9) — propose in
 ## Session log
 
 <!-- - YYYY-MM-DD · harness · what changed · next: … · open: … -->
+- 2026-08-29 · claude-code · M0 complete: scaffold (uv/hatchling/CI/pre-commit), pydantic schema + secret rejection + JSON schema, `validate` + `check` (min-keys), example ledger, 44 tests green · next: M1 (remaining checks, `lost`/`report`/`advisories`/`services`/`init`, bundled data files, `.age`) · open: §15 license / policy defaults / name (defaults in use; PyPI free, GitHub org taken)
