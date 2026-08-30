@@ -1,0 +1,50 @@
+{
+  "ledger": {
+    "path": "LEDGER",
+    "keys": 3,
+    "accounts": 3
+  },
+  "findings": [
+    {
+      "level": "FAIL",
+      "check": "min-keys",
+      "message": "T0 \"Primary email (Google)\" has 1 hardware key registered; policy requires 3",
+      "account_id": "g-mail",
+      "key_id": null
+    },
+    {
+      "level": "FAIL",
+      "check": "min-keys",
+      "message": "T1 \"Code hosting\" has 1 hardware key registered; policy requires 2",
+      "account_id": "repo",
+      "key_id": null
+    },
+    {
+      "level": "FAIL",
+      "check": "lost-retired",
+      "message": "Key k-lost is LOST but still registered on 1 account \u2192 run: keyfleet lost k-lost",
+      "account_id": null,
+      "key_id": "k-lost"
+    },
+    {
+      "level": "INFO",
+      "check": "recovery-codes",
+      "message": "T0 \"Primary email (Google)\" has no recovery-code pointer (policy requires recovery codes for T0)",
+      "account_id": "g-mail",
+      "key_id": null
+    },
+    {
+      "level": "INFO",
+      "check": "recovery-codes",
+      "message": "T1 \"Code hosting\" has no recovery-code pointer (policy requires recovery codes for T1)",
+      "account_id": "repo",
+      "key_id": null
+    }
+  ],
+  "summary": {
+    "fail": 3,
+    "warn": 0,
+    "info": 2
+  },
+  "exit_code": 1
+}

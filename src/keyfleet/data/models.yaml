@@ -1,0 +1,52 @@
+# Bundled hardware-key model data: discoverable-credential (passkey) capacity
+# per model family, with firmware ranges where the vendor documents them.
+#
+# Rules (AGENTS.md §6): every entry carries `source_url` (the vendor's own
+# page) and `verified: YYYY-MM-DD`; unverifiable facts are null, never guessed.
+# `family` is a case-insensitive prefix matched against a ledger key's `model`
+# field; when several families match, the longest wins.
+#
+# `capabilities`/`interfaces` are deliberately null until each list is
+# verified per family on a vendor page — contributions welcome.
+
+models:
+  - id: yubico-yubikey-5
+    vendor: yubico
+    family: "YubiKey 5"
+    capabilities: null
+    interfaces: null
+    discoverable_capacity:
+      - { firmware_lt: "5.7", capacity: 25 }
+      - { firmware_ge: "5.7", capacity: 100 }
+    source_url: https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-apps-fido.html
+    verified: 2026-08-29
+    notes: "Tech manual: 'YubiKeys in the 5 Series can hold up to 25 resident keys'; firmware 5.7 page: 'FIDO2 has been increased to 100 discoverable credentials (aka Passkeys)' (yk5-firmware-5.7.html). U2F is unlimited (not stored on the key)."
+  - id: yubico-security-key
+    vendor: yubico
+    family: "Security Key"
+    capabilities: null
+    interfaces: null
+    discoverable_capacity:
+      - { firmware_lt: "5.7", capacity: 25 }
+      - { firmware_ge: "5.7", capacity: 100 }
+    source_url: https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-firmware-5.7.html
+    verified: 2026-08-29
+    notes: "Security Key Series runs the same firmware line as the YubiKey 5 Series; capacity figures are documented for that firmware line (see docs/ASSUMPTIONS.md)."
+  - id: nitrokey-3
+    vendor: nitrokey
+    family: "Nitrokey 3"
+    capabilities: null
+    interfaces: null
+    discoverable_capacity: 30
+    source_url: https://docs.nitrokey.com/nitrokeys/nitrokey3/faq
+    verified: 2026-08-29
+    notes: "FAQ: 'up to 30 passkeys for the Nitrokey 3 NFC' — shared storage, so the real ceiling depends on other feature usage. The 3A Mini has its own entry."
+  - id: nitrokey-3a-mini
+    vendor: nitrokey
+    family: "Nitrokey 3A Mini"
+    capabilities: null
+    interfaces: null
+    discoverable_capacity: 100
+    source_url: https://docs.nitrokey.com/nitrokeys/nitrokey3/faq
+    verified: 2026-08-29
+    notes: "FAQ: 'up to 100 passkeys for the Nitrokey 3A Mini' — shared storage, so the real ceiling depends on other feature usage."

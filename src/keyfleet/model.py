@@ -202,6 +202,10 @@ class Advisory(StrictModel):
     affects: Affects = Field(default_factory=Affects)
     summary: str = ""
     url: str = Field(pattern=r"^https?://", description="Link to the vendor's advisory page.")
+    verified: dt.date | None = Field(
+        None, description="When the affected ranges were read from the advisory page."
+    )
+    notes: str = ""
 
 
 class Ledger(StrictModel):
@@ -371,19 +375,8 @@ def _format_validation_error(exc: ValidationError, raw: Any, source: str) -> str
     return "\n".join(lines)
 
 
-def load_ledger(path: str | Path) -> Ledger:
-    """Load and fully validate a ledger file, or raise :class:`LedgerError`."""
-    file = Path(path)
-    source = str(file)
-    if not file.is_file():
-        raise LedgerNotFoundError(
-            f"{source}: ledger file not found — pass a path (keyfleet COMMAND LEDGER) "
-            "or run from the directory containing keyfleet.yaml."
-        )
-    try:
-        text = file.read_text(encoding="utf-8")
-    except OSError as exc:
-        raise LedgerNotFoundError(f"{source}: cannot read ledger file ({exc})") from exc
+def parse_ledger(text: str, source: str) -> Ledger:
+    """Validate ledger YAML text; ``source`` names the origin in error messages."""
     try:
         raw = yaml.safe_load(text)
     except yaml.YAMLError as exc:
@@ -403,3 +396,19 @@ def load_ledger(path: str | Path) -> Ledger:
         return Ledger.model_validate(raw)
     except ValidationError as exc:
         raise LedgerError(_format_validation_error(exc, raw, source)) from exc
+
+
+def load_ledger(path: str | Path) -> Ledger:
+    """Load and fully validate a ledger file, or raise :class:`LedgerError`."""
+    file = Path(path)
+    source = str(file)
+    if not file.is_file():
+        raise LedgerNotFoundError(
+            f"{source}: ledger file not found — pass a path (keyfleet COMMAND LEDGER) "
+            "or run from the directory containing keyfleet.yaml."
+        )
+    try:
+        text = file.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise LedgerNotFoundError(f"{source}: cannot read ledger file ({exc})") from exc
+    return parse_ledger(text, source)

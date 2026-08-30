@@ -1,0 +1,271 @@
+# Bundled service data: where each service's security-key settings live, how
+# many keys it allows, and whether it supports FIDO2 discoverable credentials
+# (passkeys).
+#
+# Rules for contributions (AGENTS.md §6):
+# - Entries are alphabetical by id and every entry carries `source_url` (the
+#   vendor's OWN page stating the facts) and `verified: YYYY-MM-DD`.
+# - A fact not stated on the vendor's page is `null` — never a guess.
+#   `max_keys: null` is the common case; most services document no limit.
+# - `fido2_discoverable: false` means the vendor's page shows no passkey
+#   support (see notes); `null` means the page doesn't say either way.
+# - Regenerate docs/SERVICES.md after editing:
+#   uv run python scripts/gen_services_md.py
+
+services:
+  1password:
+    name: "1Password"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "FIDO U2F keys as a second factor; unlocking with a passkey exists in beta."
+    source_url: https://support.1password.com/security-key/
+    verified: 2026-08-29
+  amazon:
+    name: "Amazon"
+    security_settings_url: https://www.amazon.com/your-account
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkey sign-in under Your Account > Login & security; one passkey per passkey provider."
+    source_url: https://www.amazon.com/gp/help/customer/display.html?nodeId=TPphmhSWBgcI9Ak87p
+    verified: 2026-08-29
+  apple:
+    name: "Apple Account"
+    security_settings_url: null
+    max_keys: 6
+    fido2_discoverable: true
+    notes: "Requires keeping at least two security keys, up to six; managed on-device (Settings > Sign-in & Security), no web settings URL."
+    source_url: https://support.apple.com/en-us/102637
+    verified: 2026-08-29
+  aws:
+    name: "Amazon Web Services (IAM)"
+    security_settings_url: https://console.aws.amazon.com/iam/
+    max_keys: 8
+    fido2_discoverable: true
+    notes: "Root and IAM users can register up to eight MFA devices total across all types, including passkeys and security keys."
+    source_url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_enable_fido.html
+    verified: 2026-08-29
+  backblaze:
+    name: "Backblaze"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: false
+    notes: "Two-factor verification is email codes, TOTP apps, or SSO; no security-key or passkey support documented."
+    source_url: https://www.backblaze.com/computer-backup/docs/account-security
+    verified: 2026-08-29
+  bitwarden:
+    name: "Bitwarden"
+    security_settings_url: null
+    max_keys: 5
+    fido2_discoverable: true
+    notes: "Free accounts may add up to 5 FIDO2 WebAuthn keys for two-step login (Premium: 10); passkey login/unlock also offered."
+    source_url: https://bitwarden.com/help/setup-two-step-login-fido/
+    verified: 2026-08-29
+  cloudflare:
+    name: "Cloudflare"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: null
+    notes: "WebAuthn security keys for dashboard MFA; Cloudflare recommends configuring multiple keys. Passkey sign-in not mentioned."
+    source_url: https://developers.cloudflare.com/fundamentals/user-profiles/2fa/
+    verified: 2026-08-29
+  coinbase:
+    name: "Coinbase"
+    security_settings_url: https://accounts.coinbase.com/security/settings
+    max_keys: null
+    fido2_discoverable: true
+    notes: "2FA via U2F/WebAuthn security keys, passkeys, TOTP, push, or SMS; two keys recommended for highest security."
+    source_url: https://help.coinbase.com/en/coinbase/getting-started/getting-started-with-coinbase/2-step-verification
+    verified: 2026-08-29
+  digitalocean:
+    name: "DigitalOcean"
+    security_settings_url: https://cloud.digitalocean.com/account/profile
+    max_keys: null
+    fido2_discoverable: false
+    notes: "2FA is authenticator app or SMS only; no security-key, passkey, or WebAuthn support documented."
+    source_url: https://docs.digitalocean.com/platform/accounts/2fa/
+    verified: 2026-08-29
+  discord:
+    name: "Discord"
+    security_settings_url: null
+    max_keys: 16
+    fido2_discoverable: true
+    notes: "Passkeys and security keys for MFA and passwordless login; up to 16 registered at the same time."
+    source_url: https://support.discord.com/hc/en-us/articles/25966860846231-Security-Keys-Passkeys-and-Passwordless-Login-on-Discord
+    verified: 2026-08-29
+  dropbox:
+    name: "Dropbox"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "U2F/WebAuthn security keys for two-step verification; passkeys for passwordless login."
+    source_url: https://help.dropbox.com/account-access/enable-2-factor-authentication
+    verified: 2026-08-29
+  epicgames:
+    name: "Epic Games"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: false
+    notes: "2FA is Epic Authenticator, TOTP apps, email, or SMS; no security-key or passkey option listed."
+    source_url: https://www.epicgames.com/help/account-c-45487929/account-security-c-38978022/what-two-factor-authentication-2fa-methods-are-available-to-use-with-my-epic-games-account-a11272697
+    verified: 2026-08-29
+  facebook:
+    name: "Facebook"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "U2F/FIDO2 security keys for two-factor authentication; passkeys offered via Accounts Center."
+    source_url: https://www.facebook.com/help/401566786855239
+    verified: 2026-08-29
+  fastmail:
+    name: "Fastmail"
+    security_settings_url: https://app.fastmail.com/settings/security
+    max_keys: null
+    fido2_discoverable: true
+    notes: "WebAuthn/U2F security keys for 2FA and passkeys as an alternate login; multiple verification devices allowed."
+    source_url: https://www.fastmail.help/hc/en-us/articles/360058752374-Using-two-step-verification-2FA
+    verified: 2026-08-29
+  github:
+    name: "GitHub"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "WebAuthn security keys for 2FA and passkey sign-in; managed under Settings > Password and authentication."
+    source_url: https://docs.github.com/en/authentication/securing-your-account-with-two-factor-authentication-2fa/configuring-two-factor-authentication
+    verified: 2026-08-29
+  gitlab:
+    name: "GitLab.com"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "WebAuthn devices for 2FA; passkey sign-in generally available from GitLab 18.9."
+    source_url: https://docs.gitlab.com/user/profile/account/two_factor_authentication/
+    verified: 2026-08-29
+  google:
+    name: "Google Account"
+    security_settings_url: https://myaccount.google.com/signinoptions/two-step-verification
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Security keys for 2-Step Verification; signing in with just a key requires creating a passkey."
+    source_url: https://support.google.com/accounts/answer/6103523
+    verified: 2026-08-29
+  hetzner:
+    name: "Hetzner"
+    security_settings_url: https://accounts.hetzner.com/tfa
+    max_keys: null
+    fido2_discoverable: null
+    notes: "2FA supports multiple methods including YubiKey configuration; page states neither passkey nor FIDO2/U2F terms."
+    source_url: https://docs.hetzner.com/accounts-panel/accounts/two-factor-authentication/
+    verified: 2026-08-29
+  kraken:
+    name: "Kraken"
+    security_settings_url: null
+    max_keys: 5
+    fido2_discoverable: true
+    notes: "Sign-in 2FA supports FIDO2 hardware keys and passkeys; up to five passkeys plus one authenticator app."
+    source_url: https://support.kraken.com/articles/how-to-enable-multiple-2fa
+    verified: 2026-08-29
+  microsoft:
+    name: "Microsoft account"
+    security_settings_url: https://account.live.com/proofs/manage
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkeys sign you in to a Microsoft account and can be saved to a physical security key."
+    source_url: https://support.microsoft.com/en-us/accounts-billing/security/create-save-passkey
+    verified: 2026-08-29
+  namecheap:
+    name: "Namecheap"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "U2F second-factor keys with no stated limit ('as many keys as you'd like'); a passkey can be saved for 2FA."
+    source_url: https://www.namecheap.com/support/knowledgebase/article.aspx/10102/45/how-can-i-use-the-u2f-method-for-twofactor-authentication/
+    verified: 2026-08-29
+  nintendo:
+    name: "Nintendo Account"
+    security_settings_url: https://accounts.nintendo.com
+    max_keys: 10
+    fido2_discoverable: true
+    notes: "Passkey sign-in managed under Sign-in and security settings; up to 10 passkeys per account."
+    source_url: https://en-americas-support.nintendo.com/app/answers/detail/a_id/62531/~/how-to-manage-passkey-authentication-for-a-nintendo-account
+    verified: 2026-08-29
+  okta:
+    name: "Okta"
+    security_settings_url: null
+    max_keys: 10
+    fido2_discoverable: true
+    notes: "End users enroll up to 10 Passkeys (FIDO2 WebAuthn); managed from the org-specific End-User Dashboard, so no global URL."
+    source_url: https://help.okta.com/oie/en-us/content/topics/identity-engine/authenticators/passkeys-end-user-experience.htm
+    verified: 2026-08-29
+  paypal:
+    name: "PayPal"
+    security_settings_url: https://www.paypal.com/myaccount/security/passkeyLogin/manage
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkey login managed from account security settings; hardware security keys not mentioned on this page."
+    source_url: https://www.paypal.com/us/cshelp/article/what-is-a-passkey-and-how-do-i-use-it-to-log-in-to-my-paypal-account-help997
+    verified: 2026-08-29
+  playstation:
+    name: "PlayStation Network"
+    security_settings_url: https://www.playstation.com/acct/management
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkey sign-in under Account Management > Security; page warns some hardware keys may encounter issues."
+    source_url: https://www.playstation.com/en-us/support/account/set-up-passkey/
+    verified: 2026-08-29
+  proton:
+    name: "Proton"
+    security_settings_url: https://account.proton.me/
+    max_keys: 4
+    fido2_discoverable: null
+    notes: "U2F/FIDO2 security keys as a second factor, up to four per account; passkey sign-in not mentioned."
+    source_url: https://proton.me/support/2fa-security-key
+    verified: 2026-08-29
+  shopify:
+    name: "Shopify"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkeys and WebAuthn security keys for two-step authentication; multiple keys can be enrolled, no numeric limit stated."
+    source_url: https://help.shopify.com/en/manual/your-account/logging-in/two-step-authentication/security-key
+    verified: 2026-08-29
+  steam:
+    name: "Steam"
+    security_settings_url: https://store.steampowered.com/account
+    max_keys: null
+    fido2_discoverable: false
+    notes: "Steam Guard codes come only by email or the Steam Mobile app; no security-key or passkey support documented."
+    source_url: https://help.steampowered.com/en/faqs/view/06B0-26E6-2CF8-254C
+    verified: 2026-08-29
+  stripe:
+    name: "Stripe Dashboard"
+    security_settings_url: https://dashboard.stripe.com/settings/user
+    max_keys: null
+    fido2_discoverable: true
+    notes: "FIDO U2F/FIDO2 hardware keys for two-step authentication; passkey login also supported."
+    source_url: https://support.stripe.com/questions/set-up-a-hardware-security-key-for-two-step-authentication
+    verified: 2026-08-29
+  tailscale:
+    name: "Tailscale"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Passkeys for passwordless authentication to a tailnet."
+    source_url: https://tailscale.com/docs/integrations/identity/passkeys
+    verified: 2026-08-29
+  vultr:
+    name: "Vultr"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: null
+    notes: "TOTP apps and FIDO2/WebAuthn hardware keys supported; passkeys not mentioned."
+    source_url: https://docs.vultr.com/support/platform/authentication/what-is-two-factor-authentication
+    verified: 2026-08-29
+  x:
+    name: "X"
+    security_settings_url: null
+    max_keys: null
+    fido2_discoverable: true
+    notes: "Security keys can be the sole 2FA method; passkey login available on iOS and Android."
+    source_url: https://help.x.com/en/managing-your-account/two-factor-authentication
+    verified: 2026-08-29
