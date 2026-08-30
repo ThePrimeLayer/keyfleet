@@ -1,0 +1,10 @@
+version: 1
+keys:
+  - { id: yk-a, label: "Only key", vendor: yubico }
+accounts:
+  - id: acct-x
+    service: other
+    label: "Account with a dangling registration"
+    tier: T2
+    registrations:
+      - { key: yk-zz, type: u2f }

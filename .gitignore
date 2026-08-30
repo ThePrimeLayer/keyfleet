@@ -1,0 +1,16 @@
+# keyfleet — never commit a real ledger (AGENTS.md §8.3).
+# Only the fictional keyfleet.example.yaml is committed.
+keyfleet.yaml
+keyfleet.yml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/

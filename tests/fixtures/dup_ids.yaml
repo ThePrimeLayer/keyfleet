@@ -1,0 +1,4 @@
+version: 1
+keys:
+  - { id: yk-a, label: "First", vendor: yubico }
+  - { id: yk-a, label: "Second with the same id", vendor: nitrokey }
