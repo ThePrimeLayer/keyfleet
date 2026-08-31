@@ -39,28 +39,54 @@ checker that turns it into answers.
 
 ## Quick start
 
-No install needed:
+keyfleet runs straight from PyPI — nothing to install if you have
+[uv](https://docs.astral.sh/uv/): every command works as `uvx keyfleet …`,
+which is how this walkthrough writes them. Prefer a bare `keyfleet`? Run
+`uv tool install keyfleet` (or `pipx install keyfleet`) once, then drop the
+`uvx` prefix everywhere below.
 
-```bash
+**1. Create your ledger folder** — from any terminal, in any directory:
+
+```powershell
 uvx keyfleet init ~/keyfleet-ledger
 ```
 
-(or `pipx install keyfleet`). From a clone, today:
+This writes a fictional example ledger into `~/keyfleet-ledger` (creating the
+folder if needed) and gitignores `keyfleet.yaml` there, so a real ledger can
+never be committed by accident.
 
-```bash
-uv sync --all-extras --dev
+**2. Go there and make the ledger yours.**
+
+Windows (PowerShell):
+
+```powershell
+cd ~/keyfleet-ledger
+Copy-Item keyfleet.example.yaml keyfleet.yaml
+notepad keyfleet.yaml
 ```
 
+macOS / Linux:
+
 ```bash
-uv run keyfleet check keyfleet.example.yaml
+cd ~/keyfleet-ledger
+cp keyfleet.example.yaml keyfleet.yaml
+nano keyfleet.yaml        # or any editor
 ```
 
-`keyfleet init [DIRECTORY]` drops a fictional example ledger into DIRECTORY
-(default: the current directory; created if missing) and makes sure
-`.gitignore` covers `keyfleet.yaml` there. Naming a directory means it works
-from anywhere — including terminals that open somewhere unwritable like
-`C:\Windows\System32`. Copy `keyfleet.example.yaml` to `keyfleet.yaml`, make
-it yours, and from then on it's just `keyfleet check`.
+Replace the fictional keys and accounts with your own — [The ledger](#the-ledger)
+below explains every field, and editors autocomplete from the bundled JSON
+schema. Start small: two keys and your three most important accounts already
+pays for itself.
+
+**3. Validate, then check.** Run these from inside the folder — both commands
+find `keyfleet.yaml` there on their own:
+
+```powershell
+uvx keyfleet validate
+uvx keyfleet check
+```
+
+`validate` proves the file is well-formed; `check` is the payoff:
 
 ```text
 keyfleet check — 4 keys (2 active, 1 spare, 1 lost) · 5 accounts
@@ -73,12 +99,30 @@ INFO  T1 "Code hosting (GitHub)" has no recovery-code pointer (policy requires r
 2 fail, 1 warn, 1 info · exit 1
 ```
 
-That `keyfleet lost yk-old` prints the incident checklist: every affected
-account ordered by tier (the ones that become **inaccessible** first), which
-registration nickname to delete, and the service's security-settings URL —
-straight from the bundled, source-cited services table.
+Fix what it flags, re-run, repeat. From any other directory, pass the ledger
+**file** (not the folder): `uvx keyfleet check ~/keyfleet-ledger/keyfleet.yaml`.
+
+**4. The day a key goes missing:**
+
+```powershell
+uvx keyfleet lost yk-old
+```
+
+This prints the incident checklist: every affected account ordered by tier
+(the ones that become **inaccessible** first), which registration nickname to
+delete, and the service's security-settings URL — straight from the bundled,
+source-cited services table.
+
+Two gotchas worth knowing: `uvx` caches tools, so right after a new keyfleet
+release run it once as `uvx --refresh keyfleet …` to pick up the update; and
+hacking on a clone is `uv sync --all-extras --dev`, then
+`uv run keyfleet check keyfleet.example.yaml`.
 
 ## Commands
+
+Every command reads `keyfleet.yaml` from the current directory unless you pass
+`LEDGER` (a file path). Running via uvx? Prefix each with `uvx `, e.g.
+`uvx keyfleet check`.
 
 | Command | What it does |
 |---|---|
