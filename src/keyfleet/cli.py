@@ -234,7 +234,9 @@ def init(
         next_step = "copy keyfleet.example.yaml to keyfleet.yaml"
     _out.print(
         f"\nNext: {next_step}, make it yours, then run "
-        "`keyfleet validate` and `keyfleet check`. The ledger maps which keys guard "
-        "which accounts — treat it as sensitive and keep it encrypted where possible.",
+        "`keyfleet validate` and `keyfleet check` there, prefixed the same way "
+        "you ran init (e.g. `uvx keyfleet check`). The ledger maps which keys "
+        "guard which accounts — treat it as sensitive and keep it encrypted "
+        "where possible.",
         soft_wrap=True,
     )
