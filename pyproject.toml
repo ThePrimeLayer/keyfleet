@@ -1,6 +1,6 @@
 [project]
 name = "keyfleet"
-version = "0.2.0"
+version = "0.2.1"
 description = "Local-first ledger for hardware security keys: which key is registered where, and what breaks if one is lost."
 readme = "README.md"
 requires-python = ">=3.12"

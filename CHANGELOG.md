@@ -7,6 +7,8 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-31
+
 ### Fixed
 
 - The `keyfleet init` closing hint no longer tells uvx users to run a bare
