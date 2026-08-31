@@ -276,3 +276,50 @@ class TestInit:
         assert "Permission denied" in out
         assert "cd to where your ledger should live" in out
         assert "Traceback" not in out
+
+    def test_directory_argument_creates_and_populates(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        target = tmp_path / "vault" / "keys"
+        result = runner.invoke(app, ["init", str(target)])
+        assert result.exit_code == 0, all_output(result)
+        assert (target / "keyfleet.example.yaml").is_file()
+        lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
+        assert "keyfleet.yaml" in lines
+        assert f"Created {target.resolve()}" in result.output
+        assert f"Next: cd {target.resolve()}" in result.output
+        # Nothing lands in the directory init was run from.
+        assert not (tmp_path / "keyfleet.example.yaml").exists()
+        assert not (tmp_path / ".gitignore").exists()
+
+    def test_directory_argument_rerun_is_idempotent(self, tmp_path):
+        target = tmp_path / "vault"
+        runner.invoke(app, ["init", str(target)])
+        result = runner.invoke(app, ["init", str(target)])
+        assert result.exit_code == 0, all_output(result)
+        assert "already exists" in result.output
+        lines = (target / ".gitignore").read_text(encoding="utf-8").splitlines()
+        assert lines.count("keyfleet.yaml") == 1
+
+    def test_directory_argument_expands_tilde(self, tmp_path, monkeypatch):
+        # PowerShell passes `~` through to native commands untouched, so init
+        # must expand it itself. HOME covers POSIX, USERPROFILE covers Windows.
+        monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setenv("USERPROFILE", str(tmp_path))
+        result = runner.invoke(app, ["init", "~/from-tilde"])
+        assert result.exit_code == 0, all_output(result)
+        assert (tmp_path / "from-tilde" / "keyfleet.example.yaml").is_file()
+
+    def test_unwritable_directory_argument_fails_cleanly(self, tmp_path, monkeypatch):
+        from pathlib import Path
+
+        def denied(self, *args, **kwargs):
+            raise PermissionError(13, "Permission denied", str(self))
+
+        monkeypatch.setattr(Path, "mkdir", denied)
+        result = runner.invoke(app, ["init", str(tmp_path / "nope")])
+        assert result.exit_code == 2
+        out = all_output(result)
+        assert "could not write into" in out
+        assert "Permission denied" in out
+        assert "run `keyfleet init DIRECTORY` again" in out
+        assert "Traceback" not in out

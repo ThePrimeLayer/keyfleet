@@ -39,10 +39,10 @@ checker that turns it into answers.
 
 ## Quick start
 
-Once v0.1.0 is on PyPI, no install needed:
+No install needed:
 
 ```bash
-uvx keyfleet init
+uvx keyfleet init ~/keyfleet-ledger
 ```
 
 (or `pipx install keyfleet`). From a clone, today:
@@ -55,9 +55,12 @@ uv sync --all-extras --dev
 uv run keyfleet check keyfleet.example.yaml
 ```
 
-`keyfleet init` drops a fictional example ledger next to you and makes sure
-`.gitignore` covers `keyfleet.yaml`. Copy `keyfleet.example.yaml` to
-`keyfleet.yaml`, make it yours, and from then on it's just `keyfleet check`.
+`keyfleet init [DIRECTORY]` drops a fictional example ledger into DIRECTORY
+(default: the current directory; created if missing) and makes sure
+`.gitignore` covers `keyfleet.yaml` there. Naming a directory means it works
+from anywhere — including terminals that open somewhere unwritable like
+`C:\Windows\System32`. Copy `keyfleet.example.yaml` to `keyfleet.yaml`, make
+it yours, and from then on it's just `keyfleet check`.
 
 ```text
 keyfleet check — 4 keys (2 active, 1 spare, 1 lost) · 5 accounts
@@ -85,7 +88,7 @@ straight from the bundled, source-cited services table.
 | `keyfleet report [LEDGER] [--md\|--json]` | Coverage matrix, per-tier summary, key utilization. |
 | `keyfleet advisories [LEDGER]` | Keys matching vendor advisories by firmware range. |
 | `keyfleet services [--search NAME]` | The bundled service table. |
-| `keyfleet init` | Example ledger + `.gitignore` entry. |
+| `keyfleet init [DIRECTORY]` | Example ledger + `.gitignore` entry in DIRECTORY (default: here). |
 
 The checks: minimum keys per account tier (default T0:3, T1:2, T2:1 —
 override per ledger), registrations still sitting on lost/retired keys,
