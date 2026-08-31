@@ -7,6 +7,12 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The `keyfleet init` closing hint no longer tells uvx users to run a bare
+  `keyfleet` command that is not on their PATH: it now says to prefix the
+  next commands the same way init was run (e.g. `uvx keyfleet check`).
+
 ## [0.2.0] - 2026-08-31
 
 ### Added

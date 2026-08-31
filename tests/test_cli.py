@@ -287,6 +287,8 @@ class TestInit:
         assert "keyfleet.yaml" in lines
         assert f"Created {target.resolve()}" in result.output
         assert f"Next: cd {target.resolve()}" in result.output
+        # The hint must work for uvx users, who have no bare `keyfleet` on PATH.
+        assert "uvx keyfleet check" in result.output
         # Nothing lands in the directory init was run from.
         assert not (tmp_path / "keyfleet.example.yaml").exists()
         assert not (tmp_path / ".gitignore").exists()
