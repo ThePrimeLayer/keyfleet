@@ -7,6 +7,8 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-31
+
 ### Added
 
 - `keyfleet init [DIRECTORY]` — point init at a target directory instead of
