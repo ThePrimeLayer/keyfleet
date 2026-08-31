@@ -162,12 +162,28 @@ _GITIGNORE_ENTRY = "keyfleet.yaml"
 
 
 @app.command()
-def init() -> None:
-    """Write keyfleet.example.yaml here and gitignore keyfleet.yaml (never commit a real ledger)."""
-    target_dir = Path.cwd()
+def init(
+    directory: Annotated[
+        Path | None,
+        typer.Argument(
+            metavar="[DIRECTORY]",
+            help="Directory to set up; created if missing.",
+            show_default="current directory",
+        ),
+    ] = None,
+) -> None:
+    """Write keyfleet.example.yaml into DIRECTORY (default: here) and gitignore keyfleet.yaml
+    (never commit a real ledger).
+    """
+    # expanduser: PowerShell hands `~` to native commands untouched, unlike POSIX shells.
+    target_dir = (directory or Path.cwd()).expanduser().resolve()
     example = target_dir / "keyfleet.example.yaml"
     gitignore = target_dir / ".gitignore"
     try:
+        if not target_dir.exists():
+            target_dir.mkdir(parents=True)
+            _out.print(f"Created {target_dir}.", soft_wrap=True)
+
         if example.exists():
             _out.print(f"{example} already exists — leaving it untouched.", soft_wrap=True)
         else:
@@ -194,18 +210,30 @@ def init() -> None:
         # elevated shells in C:\Windows\System32) — fail with directions, not
         # a traceback.
         reason = exc.strerror or str(exc)
-        _err.print(
-            f"keyfleet init writes into the current directory, and {target_dir} "
-            f"is not writable ({reason} on {exc.filename or 'a file'}).\n"
-            "cd to where your ledger should live — a documents folder or a "
-            "private repo — and run `keyfleet init` again.",
-            style="red",
-            soft_wrap=True,
-        )
+        detail = f"({reason} on {exc.filename or 'a file'})"
+        if directory is None:
+            message = (
+                f"keyfleet init writes into the current directory, and {target_dir} "
+                f"is not writable {detail}.\n"
+                "cd to where your ledger should live — a documents folder or a "
+                "private repo — and run `keyfleet init` again, or pass that "
+                "directory: `keyfleet init DIRECTORY`."
+            )
+        else:
+            message = (
+                f"keyfleet init could not write into {target_dir} {detail}.\n"
+                "Pick a directory you can write to — a documents folder or a "
+                "private repo — and run `keyfleet init DIRECTORY` again."
+            )
+        _err.print(message, style="red", soft_wrap=True)
         raise typer.Exit(2) from exc
 
+    if directory is not None and target_dir != Path.cwd():
+        next_step = f"cd {target_dir}, copy keyfleet.example.yaml to keyfleet.yaml"
+    else:
+        next_step = "copy keyfleet.example.yaml to keyfleet.yaml"
     _out.print(
-        "\nNext: copy keyfleet.example.yaml to keyfleet.yaml, make it yours, then run "
+        f"\nNext: {next_step}, make it yours, then run "
         "`keyfleet validate` and `keyfleet check`. The ledger maps which keys guard "
         "which accounts — treat it as sensitive and keep it encrypted where possible.",
         soft_wrap=True,

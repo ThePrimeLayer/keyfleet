@@ -7,6 +7,14 @@ versioning: [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `keyfleet init [DIRECTORY]` — point init at a target directory instead of
+  cd-ing first. The directory is created if missing, `~` is expanded even
+  where the shell passes it through literally (PowerShell), and the final
+  hint says to `cd` there. Works from anywhere, including terminals that
+  open in unwritable `C:\Windows\System32`.
+
 ## [0.1.1] - 2026-08-30
 
 ### Fixed
